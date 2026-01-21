@@ -40,7 +40,6 @@ class User extends Authenticatable
         'identification_image' => 'array',
         'wallet_balance' => 'float',
         'loyalty_point' => 'float',
-        'registration_fee_status' => 'boolean',
     ];
 
     protected $appends = ['profile_image_full_path', 'identification_image_full_path'];
