@@ -978,6 +978,38 @@ class ProviderController extends Controller
      * @param $id
      * @return JsonResponse
      */
+    public function registrationstatusUpdate($id): JsonResponse
+    {
+        $this->authorize('provider_manage_status');
+      
+        $provider = $this->provider->where('id', $id)->first();
+        $this->provider->where('id', $id)->update(['registration_fee_status' => !$provider->registration_fee_status]);
+        $owner = $this->owner->where('id', $provider->user_id)->first();
+        $owner->registration_fee_status = !$provider->registration_fee_status;
+        $owner->save();
+
+        if ($owner?->registration_fee_status == 1) {
+            try {
+                Mail::to($provider?->owner?->email)->send(new AccountUnsuspendMail($provider));
+            } catch (\Exception $exception) {
+                info($exception);
+            }
+        } else {
+            try {
+                Mail::to($provider?->owner?->email)->send(new AccountSuspendMail($provider));
+            } catch (\Exception $exception) {
+                info($exception);
+            }
+        }
+
+        return response()->json(response_formatter(DEFAULT_STATUS_UPDATE_200), 200);
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     * @param $id
+     * @return JsonResponse
+     */
     public function serviceAvailability($id): JsonResponse
     {
         $this->authorize('provider_manage_status');

@@ -141,6 +141,7 @@
                                         @can('provider_manage_status')
                                             <th>{{translate('Service Availability')}}</th>
                                             <th>{{translate('Status')}}</th>
+                                            <th>{{translate('registration_fee_status')}}</th>
                                         @endcan
                                         @canany(['provider_delete', 'provider_update'])
                                             <th>{{translate('Action')}}</th>
@@ -217,6 +218,17 @@
                                                                data-route="{{route('admin.provider.status_update', [$provider->id])}}"
                                                                data-message="{{translate('want_to_update_status')}}"
                                                                type="checkbox" {{$provider?->owner?->is_active?'checked':''}}>
+                                                        <span class="switcher_control"></span>
+                                                    </label>
+                                                </td>
+
+                                                <td>
+                                                    <label class="switcher" data-bs-toggle="modal"
+                                                           data-bs-target="#deactivateAlertModal">
+                                                        <input class="switcher_input route-alert"
+                                                               data-route="{{route('admin.provider.registration_status_update', [$provider->id])}}"
+                                                               data-message="{{translate('want_to_update_status')}}"
+                                                               type="checkbox" {{$provider?->owner?->registration_fee_status?'checked':''}}>
                                                         <span class="switcher_control"></span>
                                                     </label>
                                                 </td>
