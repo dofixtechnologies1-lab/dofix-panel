@@ -495,9 +495,24 @@ class BookingController extends Controller
      */
     public function show(Request $request, string $id): JsonResponse
     {
-        $booking = $this->booking->where(['customer_id' => $request->user()->id])->with([
-            'detail.service', 'schedule_histories.user', 'status_histories.user', 'service_address', 'customer', 'provider', 'category', 'subCategory:id,name', 'serviceman.user', 'booking_partial_payments', 'repeat.scheduleHistories', 'repeat.repeatHistories'
-        ])->where(['id' => $id])->first();
+        $booking = $this->booking
+            ->where('customer_id', $request->user()->id)
+            ->where('id', $id)
+            ->with([
+                'detail.service',
+                'schedule_histories.user',
+                'status_histories.user',
+                'service_address',
+                'customer',
+                'provider',
+                'category.extras',
+                'subCategory:id,name',
+                'serviceman.user',
+                'booking_partial_payments',
+                'repeat.scheduleHistories',
+                'repeat.repeatHistories'
+            ])
+            ->first();
 
         if (isset($booking)) {
             $offlinePayment = $booking->booking_offline_payments?->first();
