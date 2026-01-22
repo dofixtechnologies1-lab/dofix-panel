@@ -23,6 +23,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'namespace' => 'Web\Admin',
     Route::group(['prefix' => 'provider', 'as' => 'provider.'], function () {
         Route::any('list', 'ProviderController@index')->name('list');
         Route::any('status-update/{id}', 'ProviderController@statusUpdate')->name('status_update');
+        Route::any('registration-status-update/{id}', 'ProviderController@registrationstatusUpdate')->name('registration_status_update');
         Route::any('service-availability/{id}', 'ProviderController@serviceAvailability')->name('service_availability');
         Route::any('suspend-update/{id}', 'ProviderController@suspendUpdate')->name('suspend_update');
         Route::post('commission-update/{id}', 'ProviderController@commissionUpdate')->name('commission_update');
