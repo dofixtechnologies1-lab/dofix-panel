@@ -58,6 +58,11 @@ class Category extends Model
         $query->where(['position' => $value]);
     }
 
+    public function extras()
+    {
+        return $this->hasMany(CategoryExtra::class, 'category_id');
+    }
+
     public function zones(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Zone::class, 'category_zone');
