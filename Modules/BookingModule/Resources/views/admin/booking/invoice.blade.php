@@ -7,183 +7,168 @@
     <script src="{{asset('assets/js/bootstrap.min.js')}}"></script>
     <script src="{{asset('assets/js/jquery.min.js')}}"></script>
     <style>
+    /* General Body Styles */
+    body {
+        background-color: #F9FCFF;
+        font-size: 10px !important;
+        line-height: 1.6;
+        font-family: "Inter", sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+
+    a {
+        color: rgb(65, 83, 179) !important;
+        text-decoration: none !important;
+    }
+
+    /* Invoice Container */
+    #invoice {
+        padding: 30px;
+        max-width: 100%;
+        margin: auto;
+    }
+
+    .invoice {
+        page-break-inside: avoid; /* prevent splitting across pages */
+        break-inside: avoid;
+        width: 100%;
+    }
+
+    .invoice:last-child {
+        page-break-after: auto;
+    }
+
+    .white-box-content {
+        background-color: #FFF;
+        border: 1px solid #e5e5e5;
+        padding: 15px;
+        page-break-inside: avoid; /* avoid splitting boxes */
+    }
+
+    /* Header & Company Details */
+    .invoice header {
+        margin-bottom: 16px;
+    }
+
+    .invoice .contacts {
+        margin-bottom: 16px;
+    }
+
+    .invoice .company-details,
+    .invoice .invoice-details {
+        text-align: right;
+    }
+
+    .invoice .thanks {
+        margin-top: 60px;
+        margin-bottom: 30px;
+    }
+
+    .invoice .footer {
+        background-color: rgba(4, 97, 165, 0.05);
+    }
+
+    .invoice table {
+        width: 100%;
+        border-collapse: collapse;
+        border-spacing: 0;
+        table-layout: fixed; /* helps with portrait printing */
+        word-wrap: break-word;
+    }
+
+    .invoice table td, 
+    .invoice table th {
+        padding: 12px;
+        font-size: 10px;
+        vertical-align: top;
+        word-break: break-word;
+    }
+
+    .invoice table th {
+        white-space: nowrap;
+        font-weight: 500;
+        background-color: rgba(4, 97, 165, 0.05);
+    }
+
+    .invoice table tfoot td {
+        background: 0 0;
+        border: none;
+        white-space: nowrap;
+        text-align: right;
+        padding: 8px 14px;
+    }
+
+    .invoice table tfoot tr:first-child td {
+        padding-top: 16px;
+    }
+
+    /* Typography */
+    .fw-700 { font-weight: 700; }
+    .fs-9 { font-size: 9px !important; }
+    .fs-8 { font-size: 8px !important; }
+    .lh-1 { line-height: 1; }
+    .fz-12 { font-size: 12px; }
+    .rounded-12 { border-radius: 12px; }
+
+    /* Layout Utilities */
+    .d-flex { display: flex; }
+    .flex-column { flex-direction: column; }
+    .border-bottom { border-bottom: 1px solid #e5e5e5; }
+    .text-right { text-align: right; }
+    .text-left { text-align: left; }
+    .text-center { text-align: center; }
+    .text-bold { font-weight: 700; }
+    .p-0 { padding: 0 !important; }
+
+    /* QR Box */
+    .qr-box {
+        border: 1px solid #e5e7eb;
+        padding: 6px;
+        border-radius: 8px;
+        width: 110px;
+        margin-left: auto;
+    }
+    .qr-box img,
+    .qr-box svg {
+        width: 100%;
+        height: auto;
+    }
+
+    /* Print Styles */
+    @page {
+        size: A4 portrait; /* Force portrait printing */
+        margin: 20mm; /* Adjust as needed */
+    }
+
+    @media print {
         body {
-            background-color: #F9FCFF;
-            font-size: 10px !important;
-            line-height: 1.6;
-            font-family: "Inter", sans-serif;
+            background: #fff !important;
+            -webkit-print-color-adjust: exact;
+            color-adjust: exact;
         }
 
         a {
-            color: rgb(65, 83, 179) !important;
             text-decoration: none !important;
         }
 
-        @media print {
-            a {
-                text-decoration: none !important;
-                -webkit-print-color-adjust: exact;
-            }
-        }
-
-        #invoice {
-            padding: 30px;
-        }
-
-        /* .invoice {
-            position: relative; */
-            /* min-height: 972px; */
-            /* max-width: 972px;
-            margin-left: auto;
-            margin-right: auto;
-
-        } */
-        .invoice {
-            page-break-inside: avoid;
-            break-inside: avoid;
-        }
-        
-        
-        .invoice:last-child {
-            page-break-after: auto;
-        }
-
-
+        .invoice, 
         .white-box-content {
-            background-color: #FFF;
-            border: 1px solid #e5e5e5;
-            padding: 15px
-        }
-
-        .invoice header {
-            margin-bottom: 16px;
-        }
-
-        .invoice .contacts {
-            margin-bottom: 16px
-        }
-
-        .invoice .company-details,
-        .invoice .invoice-details {
-            text-align: right
-        }
-
-        .invoice .thanks {
-            margin-top: 60px;
-            margin-bottom: 30px
-        }
-
-        .invoice .footer {
-            background-color: rgba(4, 97, 165, 0.05);
-        }
-
-        @media print {
-            .invoice .notices {
-                background-color: #F7F7F7 !important;
-                -webkit-print-color-adjust: exact;
-            }
-        }
-
-        .invoice table {
-            width: 100%;
-            border-collapse: collapse;
-            border-spacing: 0;
-        }
-
-        .invoice table td, .invoice table th {
-            padding: 15px;
+            page-break-inside: avoid; /* avoid splitting boxes */
         }
 
         .invoice table th {
-            white-space: nowrap;
-            font-weight: 500;
-            background-color: rgba(4, 97, 165, 0.05);
+            background-color: rgba(4, 97, 165, 0.05) !important;
+            -webkit-print-color-adjust: exact;
         }
 
-        @media print {
-            .invoice table th {
-                background-color: rgba(4, 97, 165, 0.05) !important;
-                -webkit-print-color-adjust: exact;
-            }
+        .invoice .notices {
+            background-color: #F7F7F7 !important;
+            -webkit-print-color-adjust: exact;
         }
+    }
+</style>
 
-        .invoice table tfoot td {
-            background: 0 0;
-            border: none;
-            white-space: nowrap;
-            text-align: right;
-            padding: 8px 14px;
-        }
-
-        .invoice table tfoot tr:first-child td {
-            padding-top: 16px;
-        }
-
-        .fw-700 {
-            font-weight: 700;
-        }
-
-        .fs-9 {
-            font-size: 9px !important;
-        }
-
-        .fs-8 {
-            font-size: 8px !important;
-        }
-
-        .lh-1 {
-            line-height: 1;
-        }
-
-        .rounded-12 {
-            border-radius: 12px;
-        }
-
-        .fz-12 {
-            font-size: 12px;
-        }
-        .d-flex {
-            display: flex;
-        }
-        .flex-column {
-            flex-direction: column;
-        }
-        .border-bottom {
-            border-bottom: 1px solid #e5e5e5
-        }
-        .text-right {
-            text-align: right;
-        }
-        .text-left {
-            text-align: left;
-        }
-        .text-center {
-            text-align:center
-        }
-        .text-bold {
-            font-weight: 700; /* or bold */
-        }
-        h1, h2,h3,h4, h5, h6 {
-            margin: 0
-        }
-        .p-0 {
-            padding: 0 !important
-        }
-        
-        .qr-box {
-            border: 1px solid #e5e7eb;
-            padding: 6px;
-            border-radius: 8px;
-            width: 110px;
-            margin-left: auto;
-        }
-
-        .qr-box img,
-        .qr-box svg {
-            width: 100%;
-            height: auto;
-        }
-    </style>
 </head>
 <body>
     <div id="invoice">
@@ -647,26 +632,6 @@
                     </table>
 
                     <div class="p-3">
-                        <!-- <table>
-                            <tbody>
-                                <tr class="row contacts">  
-
-                                    <td>
-                                        <div class="fs-9">{{translate('Customer')}}</div>
-                                        <div>{{$customer_name}}</div>
-                                    </td>
-                                    <td>
-                                        <div class="fs-9">{{translate('phone')}}</div>
-                                        <div>{{$customer_phone}}</div>
-                                    </td>
-                                    <td>
-                                        <div class="fs-9">{{translate('email')}}</div>
-                                        <div>{{$booking?->customer?->email}}</div>
-                                    </td>
-                                        
-                                </tr>
-                            </tbody>
-                        </table> -->
 
                         <!-- Bill Table -->
                         <table cellspacing="0" cellpadding="0">
@@ -719,20 +684,6 @@
 
         </div>
     </div>
-
-<!-- <script>
-    "use strict";
-
-    function printContent(el) {
-        var restorepage = $('body').html();
-        var printcontent = $('#' + el).clone();
-        $('body').empty().html(printcontent);
-        window.print();
-        $('body').html(restorepage);
-    }
-
-    printContent('invoice');
-</script> -->
 <script>
     window.print();
 </script>
