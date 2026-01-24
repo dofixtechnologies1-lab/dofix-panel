@@ -30,14 +30,24 @@
             padding: 30px;
         }
 
-        .invoice {
-            position: relative;
-            min-height: 972px;
-            max-width: 972px;
+        /* .invoice {
+            position: relative; */
+            /* min-height: 972px; */
+            /* max-width: 972px;
             margin-left: auto;
             margin-right: auto;
 
+        } */
+        .invoice {
+            page-break-inside: avoid;
+            break-inside: avoid;
         }
+        
+        
+        .invoice:last-child {
+            page-break-after: auto;
+        }
+
 
         .white-box-content {
             background-color: #FFF;
@@ -138,256 +148,307 @@
         .flex-column {
             flex-direction: column;
         }
-.border-bottom {
-    border-bottom: 1px solid #e5e5e5
-}
-.text-right {
-    text-align: right;
-}
-.text-left {
-    text-align: left;
-}
-.text-center {
-    text-align:center
-}
-h1, h2,h3,h4, h5, h6 {
-    margin: 0
-}
-.p-0 {
-    padding: 0 !important
-}
+        .border-bottom {
+            border-bottom: 1px solid #e5e5e5
+        }
+        .text-right {
+            text-align: right;
+        }
+        .text-left {
+            text-align: left;
+        }
+        .text-center {
+            text-align:center
+        }
+        .text-bold {
+            font-weight: 700; /* or bold */
+        }
+        h1, h2,h3,h4, h5, h6 {
+            margin: 0
+        }
+        .p-0 {
+            padding: 0 !important
+        }
+        
+        .qr-box {
+            border: 1px solid #e5e7eb;
+            padding: 6px;
+            border-radius: 8px;
+            width: 110px;
+            margin-left: auto;
+        }
+
+        .qr-box img,
+        .qr-box svg {
+            width: 100%;
+            height: auto;
+        }
     </style>
 </head>
 <body>
-<div id="invoice">
-    <div class="invoice d-flex flex-column">
-        <div>
-            <table>
-                <tbody>
-                <tr>
-                    <td>
-                        <h3 class="text-uppercase fw-700">{{translate("invoice")}}</h3>
-                        <div>{{translate('Booking')}} #{{$booking->readable_id}}</div>
-                        <div>{{translate('date')}}: {{date('d-M-Y h:ia',strtotime($booking->created_at))}}</div>
-                    </td>
-                    <td class="company-details">
-                        <a target="_blank" href="#">
-                            @php($logo = getBusinessSettingsImageFullPath(key: 'business_logo', settingType: 'business_information', path: 'business/', defaultPath: 'assets/placeholder.png'))
-                            <img width="84" height=""
-                                 src="{{$logo}}" alt="{{ translate('logo') }}"
-                                 data-holder-rendered="true"/>
-                        </a>
-                        @php($business_email = business_config('business_email','business_information'))
-                        @php($business_phone = business_config('business_phone','business_information'))
-                        @php($business_address = business_config('business_address','business_information'))
-                        <div class="mt-2">{{$business_address->live_values}}</div>
-                        <div>{{$business_phone->live_values}}</div>
-                        <div>{{$business_email->live_values}}</div>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-
-            @php($customer_name = $booking->customer ? $booking?->customer?->first_name.' '.$booking?->customer?->last_name : $booking?->service_address?->contact_person_name)
-            @php($customer_phone = $booking->customer ? $booking?->customer?->phone : $booking?->service_address?->contact_person_number)
-
-            <div class="white-box-content border rounded-12 border">
+    <div id="invoice">
+        <div class="invoice d-flex flex-column">
+            <div>
                 <table>
+                    <tbody>
                     <tr>
-                        <td class="border-bottom p-0">
-                            <table>
-                                <tr>
-                                <td>
-                                    <div class="fs-9">{{translate('Customer')}}</div>
-                                    <div>{{$customer_name}}</div>
-                                </td>
-                                <td>
-                                    <div class="fs-9">{{translate('phone')}}</div>
-                                    <div>{{$customer_phone}}</div>
-                                </td>
-                                <td>
-                                    <div class="fs-9">{{translate('email')}}</div>
-                                    <div>{{$booking?->customer?->email}}</div>
-                                </td>
-                                </tr>
-                            </table>
+                        <td>
+                            <h3 class="text-uppercase fw-700">{{translate("invoice")}}</h3>
+                            <div>{{translate('Booking')}} #{{$booking->readable_id}}</div>
+                            <div>{{translate('date')}}: {{date('d-M-Y h:ia',strtotime($booking->created_at))}}</div>
                         </td>
-                        <td class="border-bottom">
-                            <div class="text-right">
-                                <div>{{translate('Invoice of')}} ({{currency_code()}})</div>
-                                <h5 style="font-size:20px; font-weight: 700;margin:0;color:#007bff">{{with_currency_symbol($booking->total_booking_amount)}}</h5>
+                        <td class="company-details">
+                            <a target="_blank" href="#">
+                                @php($logo = getBusinessSettingsImageFullPath(key: 'business_logo', settingType: 'business_information', path: 'business/', defaultPath: 'assets/placeholder.png'))
+                                <img width="84" height=""
+                                     src="{{$logo}}" alt="{{ translate('logo') }}"
+                                     data-holder-rendered="true"/>
+                            </a>
+                            @php($business_email = business_config('business_email','business_information'))
+                            @php($business_phone = business_config('business_phone','business_information'))
+                            @php($business_address = business_config('business_address','business_information'))
+                            <div class="mt-2">{{$business_address->live_values}}</div>
+                            <div>{{$business_phone->live_values}}</div>
+                            <div>{{$business_email->live_values}}</div>
+                        </td>
+                        <td width="20%" class="text-center">
+                            <div class="qr-box">
+                                <img src="{{ asset('assets/qr/dofix-customer-qr.svg') }}" alt="Invoice QR">
                             </div>
+                            <div class="muted">Download DoFix</div>
                         </td>
                     </tr>
+                    </tbody>
                 </table>
-
-                <div class="p-3">
+    
+                @php($customer_name = $booking->customer ? $booking?->customer?->first_name.' '.$booking?->customer?->last_name : $booking?->service_address?->contact_person_name)
+                @php($customer_phone = $booking->customer ? $booking?->customer?->phone : $booking?->service_address?->contact_person_number)
+    
+                <div class="white-box-content border rounded-12 border">
                     <table>
-                        <tr class="row contacts">
-                            <td>
-                                <div>
-                                    <div class="fs-9">{{translate('Payment')}}</div>
-                                    <div class="mt-1">{{ str_replace(['_', '-'], ' ', $booking->payment_method) }}</div>
-                                </div>
-                                <div class="mt-3">
-                                    <div class="fs-9">{{translate('Reference ID')}}</div>
-                                    <div class="mt-1">{{$booking->readable_id}}</div>
-                                </div>
+                        <tr>
+                            <td class="border-bottom p-0">
+                                <table>
+                                    <!-- <tr>
+                                        <td>
+                                            <div class="fs-9 fw-700">{{translate('Customer')}}</div>
+                                            <div>{{$customer_name}}</div>
+                                        </td>
+                                        <td>
+                                            <div class="fs-9 fw-700">{{translate('phone')}}</div>
+                                            <div>{{$customer_phone}}</div>
+                                        </td>
+                                        <td>
+                                            <div class="fs-9 fw-700">{{translate('email')}}</div>
+                                            <div>{{$booking?->customer?->email}}</div>
+                                        </td>
+                                    </tr> -->
+                                    <tr>
+                                        <td>
+                                            <div class="text-center">
+                                                <div class="fz-12 fw-700">{{translate('Reference ID')}}</div>
+                                                <div class="mt-3">
+                                                <div class="fs-9 fw-400">#{{$booking->readable_id}}</div>
+                                            </div>
+                                            </div>
+
+                                        </td>
+                                        <td>
+                                            <div class="text-center">
+                                                <div class="fz-12 fw-700">Payment Method</div>
+                                                <div class="mt-1 text-center">
+                                                    {{ in_array($booking->payment_method, ['razor_pay']) ? 'Online' : 'Cash' }}
+                                                </div>
+        
+                                            </div>
+                                            <!-- <div class="mt-3">
+                                                <div class="fs-9 fw-400">{{translate('Reference ID')}}:{{$booking->readable_id}}</div> -->
+                                                <!-- <div class="mt-1">{{$booking->readable_id}}</div> -->
+                                            <!-- </div> -->
+                                        </td>
+                                    </tr>
+                                </table>
                             </td>
-
-                            <td class="border-left">
-                                <h6 class="fz-12">{{translate('Service Address')}}</h6>
-                                <div class="fs-9">{{$customer_name}}</div>
-                                <div class="fs-9">{{$customer_phone}}</div>
-                                <div class="fs-9">{{$booking?->service_address?->address??translate('not_available')}}</div>
-                            </td class="border-left">
-
-                            <td class="border-left">
-                                <h6 class="fz-12">{{translate('Service Time')}}</h6>
-                                <div class="fs-9">{{translate('Request Date')}}
-                                    : {{date('d-M-Y h:ia',strtotime($booking->created_at))}}</div>
-                                <div class="fs-9">{{translate('Service Date')}}
-                                    : {{date('d-M-Y h:ia',strtotime($booking->service_schedule))}}</div>
+                            <td class="border-bottom">
+                                <div class="text-right">
+                                    <div>{{translate('Invoice')}} ({{currency_code()}})</div>
+                                    <h5 style="font-size:20px; font-weight: 700;margin:0;color:#007bff">{{with_currency_symbol($booking->total_booking_amount)}}</h5>
+                                </div>
                             </td>
                         </tr>
                     </table>
+    
+                    <div class="p-3">
+                        <table>
+                            <tr class="row contacts">
+                                <!-- <td>
+                                    <div>
+                                        <div class="fz-12 fw-700">Payment Details</div>
+                                        <div class="mt-1">
+                                            Method: {{ in_array($booking->payment_method, ['razor_pay']) ? 'Online' : 'Cash' }}
+                                        </div>
 
-                    <table cellspacing="0" cellpadding="0">
-                        <thead>
-                        <tr>
-                            <th class="text-left">{{translate('SL')}}</th>
-                            <th class="text-left text-uppercase">{{translate('description')}}</th>
-                            <th class="text-center text-uppercase">{{translate('qty')}}</th>
-                            <th class="text-right text-uppercase">{{translate('cost')}}</th> 
-                            <th class="text-right text-uppercase">{{translate('total')}}</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        @php($sub_total = $con = $agg =  $con_p = $agg_p =0 )
-                        @foreach($booking->detail as $index=>$item)
-                            <?php 
-                                $gstCal = gst_calculation($item->variation_id); 
-                                $con_fee = $gstCal['con_fee'];
-                                $agg_fee = $gstCal['agg_fee'];
-                                $con_per = $gstCal['con_per'];
-                                $agg_per = $gstCal['agg_per'];
-
-                            ?>
-                            <tr>
-                                <td class="border-bottom text-left">{{(strlen($index+1)<2?'0':'').$index+1}}</td>
-                                <td class="border-bottom text-left">
-                                    <div>{{$item->service->name??''}}</div>
-                                    <div>{{$item->variant_key}}</div>
-                                </td>
-                                <td class="border-bottom text-center">{{$item->quantity}}</td>
-                                <td class="border-bottom text-right">{{with_currency_symbol($item->service_cost)}}</td> 
-                                <td class="border-bottom text-right">  
-                                    <p class="mb-1">Conn Fee: {{ with_currency_symbol($con_fee) }}</p>
-                                    <p class="mb-1">Agg Fee: {{ with_currency_symbol($agg_fee) }}</p>
-                                    <p class="mb-1"><strong>Total: {{ with_currency_symbol($item->total_cost) }}</strong></p> 
+                                    </div>
+                                    <div class="mt-3">
+                                        <div class="fs-9 fw-400">{{translate('Reference ID')}}:{{$booking->readable_id}}</div> -->
+                                        <!-- <div class="mt-1">{{$booking->readable_id}}</div> -->
+                                    <!-- </div>
+                                </td> -->
+    
+                                <td class="border-left">
+                                    <h6 class="fz-12">Service Details</h6>
+                                    <div class="fs-9">Name: {{$customer_name}}</div>
+                                    <div class="fs-9">Phone: {{$customer_phone}}</div>
+                                    <div class="fs-9">Address: {{$booking?->service_address?->address??translate('not_available')}}</div>
+                                </td class="border-left">
+    
+                                <td class="border-left">
+                                    <h6 class="fz-12">{{translate('Service Time')}}</h6>
+                                    <div class="fs-9">{{translate('Request Date')}}
+                                        : {{date('d-M-Y h:ia',strtotime($booking->created_at))}}</div>
+                                    <div class="fs-9">{{translate('Service Date')}}
+                                        : {{date('d-M-Y h:ia',strtotime($booking->service_schedule))}}</div>
                                 </td>
                             </tr>
-                            @php($sub_total+=$item->service_cost*$item->quantity)
-                            <?php 
-                                $gstCal = gst_calculation($item->variation_id); 
-                                $con += $gstCal['con_fee'];
-                                $agg += $gstCal['agg_fee'];
-                                $con_p += $gstCal['con_per'];
-                                $agg_p += $gstCal['agg_per'];
-
-                            ?>
-                        @endforeach
-                        </tbody>
-                        <tfoot>
-                        <tr>
-                            <td colspan="3"></td>
-                            <td class="">{{translate('subtotal')}}</td>
-                            <td>{{with_currency_symbol($sub_total)}}</td>
-                        </tr>
-                        <tr>
-                            <td colspan="3"></td>
-                            <td>{{translate('Discount')}}</td>
-                            <td>- {{with_currency_symbol($booking->total_discount_amount)}}</td>
-                        </tr> 
-                        @if ($booking->extra_fee > 0)
-                            @php($additional_charge_label_name = business_config('additional_charge_label_name', 'booking_setup')->live_values??'Fee')
+                        </table>
+    
+                        <table cellspacing="0" cellpadding="0">
+                            <thead>
                             <tr>
-                                <td colspan="2"></td>
-                                <td colspan="2" class="text-uppercase">{{$additional_charge_label_name}}</td>
-                                <td>+ {{with_currency_symbol($booking->extra_fee)}}</td>
+                                <th class="text-left">{{translate('SL')}}</th>
+                                <th class="text-left text-uppercase">{{translate('description')}}</th>
+                                <th class="text-center text-uppercase">{{translate('qty')}}</th>
+                                <th class="text-right text-uppercase">{{translate('cost')}}</th> 
+                                <th class="text-right text-uppercase">{{translate('total')}}</th>
                             </tr>
-                        @endif
-                        <tr>
-                            <td colspan="3"></td>
-                            <td class="text-uppercase">Convenience Fee</td>
-                            <td class="text-uppercase">{{with_currency_symbol($con)}}</td>
-                        </tr>
-                        <tr>
-                            <td colspan="3"></td>
-                            <td class="text-uppercase">Aggregate Fee</td>
-                            <td class="text-uppercase">{{with_currency_symbol($agg)}}</td>
-                        </tr>
-                        <tr>
-                            <td colspan="3"></td>
-                            <td class="fw-700 border-top">{{translate('Total')}}</td>
-                            <td class="fw-700 border-top">{{with_currency_symbol($booking->total_booking_amount)}}</td>
-                        </tr>
-                        @if ($booking->booking_partial_payments->isNotEmpty())
-                            @foreach($booking->booking_partial_payments as $partial)
+                            </thead>
+                            <tbody>
+                            @php($sub_total = $con = $agg =  $con_p = $agg_p =0 )
+                            @foreach($booking->detail as $index=>$item)
+                                <?php 
+                                    $gstCal = gst_calculation($item->variation_id); 
+                                    $con_fee = $gstCal['con_fee'];
+                                    $agg_fee = $gstCal['agg_fee'];
+                                    $con_per = $gstCal['con_per'];
+                                    $agg_per = $gstCal['agg_per'];
+    
+                                ?>
+                                <tr>
+                                    <td class="border-bottom text-left">{{(strlen($index+1)<2?'0':'').$index+1}}</td>
+                                    <td class="border-bottom text-left">
+                                        <div>{{$item->service->name??''}}</div>
+                                        <div>{{$item->variant_key}}</div>
+                                    </td>
+                                    <td class="border-bottom text-center">{{$item->quantity}}</td>
+                                    <td class="border-bottom text-right">{{with_currency_symbol($item->service_cost)}}</td> 
+                                    <td class="border-bottom text-right">  
+                                        <p class="mb-1">Conn Fee: {{ with_currency_symbol($con_fee) }}</p>
+                                        <p class="mb-1">Agg Fee: {{ with_currency_symbol($agg_fee) }}</p>
+                                        <p class="mb-1"><strong>Total: {{ with_currency_symbol($item->total_cost) }}</strong></p> 
+                                    </td>
+                                </tr>
+                                @php($sub_total+=$item->service_cost*$item->quantity)
+                                <?php 
+                                    $gstCal = gst_calculation($item->variation_id); 
+                                    $con += $gstCal['con_fee'];
+                                    $agg += $gstCal['agg_fee'];
+                                    $con_p += $gstCal['con_per'];
+                                    $agg_p += $gstCal['agg_per'];
+    
+                                ?>
+                            @endforeach
+                            </tbody>
+                            <tfoot>
+                            <tr>
+                                <td colspan="3"></td>
+                                <td class="">{{translate('subtotal')}}</td>
+                                <td>{{with_currency_symbol($sub_total)}}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="3"></td>
+                                <td>{{translate('Discount')}}</td>
+                                <td>- {{with_currency_symbol($booking->total_discount_amount)}}</td>
+                            </tr> 
+                            @if ($booking->extra_fee > 0)
+                                @php($additional_charge_label_name = business_config('additional_charge_label_name', 'booking_setup')->live_values??'Fee')
+                                <tr>
+                                    <td colspan="2"></td>
+                                    <td colspan="2" class="text-uppercase">{{$additional_charge_label_name}}</td>
+                                    <td>+ {{with_currency_symbol($booking->extra_fee)}}</td>
+                                </tr>
+                            @endif
+                            <tr>
+                                <td colspan="3"></td>
+                                <td class="text-uppercase">Convenience Fee</td>
+                                <td class="text-uppercase">{{with_currency_symbol($con)}}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="3"></td>
+                                <td class="text-uppercase">Aggregate Fee</td>
+                                <td class="text-uppercase">{{with_currency_symbol($agg)}}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="3"></td>
+                                <td class="fw-700 border-top">{{translate('Total')}}</td>
+                                <td class="fw-700 border-top">{{with_currency_symbol($booking->total_booking_amount)}}</td>
+                            </tr>
+                            @if ($booking->booking_partial_payments->isNotEmpty())
+                                @foreach($booking->booking_partial_payments as $partial)
+                                    <tr>
+                                        <td colspan="3"></td>
+                                        <td class="fw-700">{{translate('Paid_by')}} {{str_replace('_', ' ',$partial->paid_with)}}</td>
+                                        <td class="fw-700 border-top">{{with_currency_symbol($partial->paid_amount)}}</td>
+                                    </tr>
+                                @endforeach
+                            @endif
+    
+                            <?php
+                            $dueAmount = 0;
+    
+                            if (!$booking->is_paid && $booking?->booking_partial_payments?->count() == 1) {
+                                $dueAmount = $booking->booking_partial_payments->first()?->due_amount;
+                            }
+    
+                            if (in_array($booking->booking_status, ['pending', 'accepted', 'ongoing']) && $booking->payment_method != 'cash_after_service' && $booking->additional_charge > 0) {
+                                $dueAmount += $booking->additional_charge;
+                            }
+    
+                            if (!$booking->is_paid && $booking->payment_method == 'cash_after_service') {
+                                $dueAmount = $booking->total_booking_amount;
+                            }
+                            ?>
+                            @if($dueAmount > 0)
                                 <tr>
                                     <td colspan="3"></td>
-                                    <td class="fw-700">{{translate('Paid_by')}} {{str_replace('_', ' ',$partial->paid_with)}}</td>
-                                    <td class="fw-700 border-top">{{with_currency_symbol($partial->paid_amount)}}</td>
+                                    <td class="fw-700">{{ translate('Due_Amount') }}</td>
+                                    <td class="fw-700">{{ with_currency_symbol($dueAmount) }}</td>
                                 </tr>
-                            @endforeach
-                        @endif
+                            @endif
+    
+                            @if($booking->payment_method != 'cash_after_service' && $booking->additional_charge < 0)
+                                <tr>
+                                    <td colspan="3"></td>
+                                    <td class="fw-700">{{translate('Refund')}}</td>
+                                    <td class="fw-700">{{with_currency_symbol(abs($booking->additional_charge))}}</td>
+                                </tr>
+                            @endif
+                            </tfoot>
+                        </table>
 
-                        <?php
-                        $dueAmount = 0;
-
-                        if (!$booking->is_paid && $booking?->booking_partial_payments?->count() == 1) {
-                            $dueAmount = $booking->booking_partial_payments->first()?->due_amount;
-                        }
-
-                        if (in_array($booking->booking_status, ['pending', 'accepted', 'ongoing']) && $booking->payment_method != 'cash_after_service' && $booking->additional_charge > 0) {
-                            $dueAmount += $booking->additional_charge;
-                        }
-
-                        if (!$booking->is_paid && $booking->payment_method == 'cash_after_service') {
-                            $dueAmount = $booking->total_booking_amount;
-                        }
-                        ?>
-                        @if($dueAmount > 0)
-                            <tr>
-                                <td colspan="3"></td>
-                                <td class="fw-700">{{ translate('Due_Amount') }}</td>
-                                <td class="fw-700">{{ with_currency_symbol($dueAmount) }}</td>
-                            </tr>
-                        @endif
-
-                        @if($booking->payment_method != 'cash_after_service' && $booking->additional_charge < 0)
-                            <tr>
-                                <td colspan="3"></td>
-                                <td class="fw-700">{{translate('Refund')}}</td>
-                                <td class="fw-700">{{with_currency_symbol(abs($booking->additional_charge))}}</td>
-                            </tr>
-                        @endif
-                        </tfoot>
-                    </table>
+                    </div>
+                    <div class="mt-5 text-center mb-4">This is a system generated invoice and hence no signature required.</div>
+    
+                    <div class="mt-5 text-center mb-4 text-bold">{{translate('Thanks for using our service')}} {{$customer_name}}</div>
                 </div>
-
-                <div class="mt-5 text-center mb-4">{{translate('Thanks for using our service')}}.</div>
             </div>
+    
+            <div style="padding:24px 0">
+                <div class="fw-700">{{translate('Terms & Conditions')}}</div>
+                <div>{{translate('Change of mind is not applicable as a reason for refund')}}</div>
+            </div>
+     
         </div>
-
-        <div style="padding:24px 0">
-            <div class="fw-700">{{translate('Terms & Conditions')}}</div>
-            <div>{{translate('Change of mind is not applicable as a reason for refund')}}</div>
-        </div>
- 
     </div>
-</div>
-
     <div id="invoice">
         <div class="invoice d-flex flex-column">
             <div>
@@ -413,6 +474,12 @@ h1, h2,h3,h4, h5, h6 {
                                 <div>{{$business_phone->live_values}}</div>
                                 <div>{{$business_email->live_values}}</div>
                             </td>
+                            <td width="20%" class="text-center">
+                            <div class="qr-box">
+                                <img src="{{ asset('assets/qr/dofix-customer-qr.svg') }}" alt="Invoice QR">
+                            </div>
+                            <div class="muted">Download DoFix</div>
+                        </td>
                         </tr>
                     </tbody>
                 </table>
@@ -424,12 +491,12 @@ h1, h2,h3,h4, h5, h6 {
                                     <table>
                                         <tbody>
                                             <tr>
-                                                <td>
-                                                    <div class="fs-9">Invoice No.</div>
+                                                <td class="text-center">
+                                                    <div class="fz-12 fw-700">Invoice No.</div>
                                                     <div>#{{$booking->readable_id}}</div>
                                                 </td>
-                                                <td>
-                                                    <div class="fs-9">Invoice Date</div>
+                                                <td class="text-center">
+                                                    <div class="fz-12 fw-700">Invoice Date</div>
                                                     <div>{{date('d-M-Y h:ia',strtotime($booking->created_at))}}</div>
                                                 </td> 
                                             </tr>
@@ -445,7 +512,7 @@ h1, h2,h3,h4, h5, h6 {
                     </table>
 
                     <div class="p-3">
-                        <table>
+                        <!-- <table>
                             <tbody>
                                 <tr class="row contacts">  
 
@@ -464,7 +531,7 @@ h1, h2,h3,h4, h5, h6 {
                                         
                                 </tr>
                             </tbody>
-                        </table>
+                        </table> -->
 
                         <!-- Bill Table -->
                         <table cellspacing="0" cellpadding="0">
@@ -494,13 +561,16 @@ h1, h2,h3,h4, h5, h6 {
                             <tfoot>
                                 <tr>
                                     <td class="fw-700 border-top">Total</td>
-                                    <td class="fw-700 border-top">{{ with_currency_symbol($agg)}} </td>
+                                    <td class="fw-700 border-top">{{ with_currency_symbol($agg) }}<br>
+                                       <span class="fw-200 fs-9 text-muted">{Inclusive of Taxes}</span>
+                                    </td>
+
                                 </tr>
                             </tfoot>
                         </table>
                     </div>
 
-                    <div class="mt-5 text-center mb-4">Inclusive of Taxes</div>
+                    <div class="mt-5 text-center mb-4">This is a system generated invoice and hence no signature required.</div>
                 </div>
             </div>
 
@@ -539,6 +609,12 @@ h1, h2,h3,h4, h5, h6 {
                                 <div>{{$business_phone->live_values}}</div>
                                 <div>{{$business_email->live_values}}</div>
                             </td>
+                            <td width="20%" class="text-center">
+                            <div class="qr-box">
+                                <img src="{{ asset('assets/qr/dofix-customer-qr.svg') }}" alt="Invoice QR">
+                            </div>
+                            <div class="muted">Download DoFix</div>
+                        </td>
                         </tr>
                     </tbody>
                 </table>
@@ -550,12 +626,12 @@ h1, h2,h3,h4, h5, h6 {
                                     <table>
                                         <tbody>
                                             <tr>
-                                                <td>
-                                                    <div class="fs-9">Invoice No.</div>
+                                                <td class="text-center">
+                                                    <div class="fz-12 fw-700">Invoice No.</div>
                                                     <div>#{{$booking->readable_id}}</div>
                                                 </td>
-                                                <td>
-                                                    <div class="fs-9">Invoice Date</div>
+                                                <td class="text-center">
+                                                    <div class="fz-12 fw-700">Invoice Date</div>
                                                     <div>{{date('d-M-Y h:ia',strtotime($booking->created_at))}}</div>
                                                 </td> 
                                             </tr>
@@ -571,7 +647,7 @@ h1, h2,h3,h4, h5, h6 {
                     </table>
 
                     <div class="p-3">
-                        <table>
+                        <!-- <table>
                             <tbody>
                                 <tr class="row contacts">  
 
@@ -590,7 +666,7 @@ h1, h2,h3,h4, h5, h6 {
                                         
                                 </tr>
                             </tbody>
-                        </table>
+                        </table> -->
 
                         <!-- Bill Table -->
                         <table cellspacing="0" cellpadding="0">
@@ -621,13 +697,15 @@ h1, h2,h3,h4, h5, h6 {
                             <tfoot>
                                 <tr>
                                     <td class="fw-700 border-top">Total</td>
-                                    <td class="fw-700 border-top"> {{ with_currency_symbol($con) }} </td>
+                                     <td class="fw-700 border-top">{{ with_currency_symbol($agg) }}<br>
+                                       <span class="fw-200 fs-9 text-muted">{Inclusive of Taxes}</span>
+                                    </td>
                                 </tr>
                             </tfoot>
                         </table>
                     </div>
 
-                    <div class="mt-5 text-center mb-4">Inclusive of Taxes</div>
+                    <div class="mt-5 text-center mb-4">This is a system generated invoice and hence no signature required</div>
                 </div>
             </div>
 
@@ -642,7 +720,7 @@ h1, h2,h3,h4, h5, h6 {
         </div>
     </div>
 
-<script>
+<!-- <script>
     "use strict";
 
     function printContent(el) {
@@ -654,6 +732,10 @@ h1, h2,h3,h4, h5, h6 {
     }
 
     printContent('invoice');
+</script> -->
+<script>
+    window.print();
 </script>
+
 </body>
 </html>
