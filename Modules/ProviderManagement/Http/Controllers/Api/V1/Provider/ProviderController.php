@@ -859,7 +859,6 @@ class ProviderController extends Controller
     public function Transactions(Request $request)
     {
 
-
         $validator = Validator::make($request->all(), [
             'user_id' => 'required',
         ]);
