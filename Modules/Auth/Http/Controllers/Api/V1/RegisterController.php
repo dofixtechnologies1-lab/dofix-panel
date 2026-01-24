@@ -293,14 +293,14 @@ class RegisterController extends Controller
             'contact_number'=>'required',
             'email'=>'required',
             'adhar_number'=>'required',
-            'adhar_img' => 'required|image|mimes:jpeg,jpg,png,gif,heic,webp|max:10000',
+            'adhar_img' => 'required|mimes:jpeg,jpg,png,gif,heic,webp|max:10000',
             'pan_number'=>'nullable',
-            'pan_img' => 'nullable|image|mimes:jpeg,jpg,png,gif,heic,webp|max:10000',
+            'pan_img' => 'nullable|mimes:jpeg,jpg,png,gif,heic,webp|max:10000',
             'dl_number'=>'nullable',
-            'dl_img' => 'nullable|image|mimes:jpeg,jpg,png,gif,heic,webp|max:10000',
+            'dl_img' => 'nullable|mimes:jpeg,jpg,png,gif,heic,webp|max:10000',
             'acc_holder_name'=>'required',
             'acc_number'=>'required',
-            'bank_doc' => 'required|image|mimes:jpeg,jpg,png,gif,heic,webp|max:10000',
+            'bank_doc' => 'required|mimes:jpeg,jpg,png,gif,heic,webp|max:10000',
             'branch_name'=>'required',
             'ifsc_code'=>'required',
             'profile_img'=>'required',
@@ -308,7 +308,7 @@ class RegisterController extends Controller
             'zone_id' => 'required|uuid',
             'latitude' => 'required',
             'longitude' => 'required',
-            'passbook_img' => 'nullable|image|mimes:jpeg,jpg,png,gif,heic,webp|max:10000',
+            'passbook_img' => 'nullable|mimes:jpeg,jpg,png,gif,heic,webp|max:10000',
         ]);
 
         if ($validator->fails()) {
