@@ -48,6 +48,8 @@ Route::group(['prefix' => 'provider', 'as' => 'provider.', 'namespace' => 'Api\V
 
     Route::get('subscribed/sub-categories', 'ProviderController@subscribedSubCategories');
 
+    Route::get('get-notifications', [CustomerController::class, 'pushNotificationProvider']);
+
 
     Route::group(['prefix' => 'service', 'as' => 'service.',], function () {
         Route::post('update-subscription', 'ServiceController@updateSubscription');
