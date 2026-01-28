@@ -63,5 +63,6 @@ Route::group(['prefix' => 'customer', 'as' => 'customer.', 'namespace' => 'Api\V
 
     Route::post('change-language', [CustomerController::class, 'changeLanguage']);
     Route::post('error-link', [CustomerController::class, 'errorLink']);
+    Route::get('get-notifications', [CustomerController::class, 'pushNotificationCustomer']);
 });
 

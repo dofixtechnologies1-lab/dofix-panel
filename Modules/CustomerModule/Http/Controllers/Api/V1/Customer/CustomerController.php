@@ -308,5 +308,48 @@ class CustomerController extends Controller
         return response()->json(response_formatter(DEFAULT_200), 200);
     }
 
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function pushNotificationCustomer(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'user_id'   => 'required|string',
+            'user_type' => 'required|string'
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json(response_formatter(
+                DEFAULT_400,
+                null,
+                error_processor($validator)
+            ), 400);
+        }
+    
+        try {
+            $notifications = DB::table('notifications')
+                ->where('user_id', $request->user_id)
+                ->where('user_type', $request->user_type)
+                ->orderBy('id', 'desc')
+                ->get();
+    
+            if ($notifications->count() > 0) {
+                return response()->json(
+                    response_formatter(DEFAULT_200, $notifications),
+                    200
+                );
+            }
+    
+            return response()->json(response_formatter(DEFAULT_204), 200);
+    
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'line'    => $e->getLine()
+            ], 500);
+        }
+    }
+
 
 }
