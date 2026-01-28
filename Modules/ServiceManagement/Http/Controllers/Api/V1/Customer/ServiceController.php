@@ -776,17 +776,66 @@ class ServiceController extends Controller
      * @return JsonResponse
      */
     public function show(Request $request)
-    {
+    // {
+    //     $id = $request->id;
+    //     $categoryIds = DB::table('category_zone')->where('zone_id', $request->header('zoneID'))
+    //         ->pluck('category_id');
+    //     $service = $this->service->where('id', $id)
+    //         ->with(['category.children', 'faqs' => function ($query) {
+    //             return $query->where('is_active', 1);
+    //         }])
+    //         ->whereIn('category_id', $categoryIds)
+    //         ->ofStatus(1)
+    //         ->first();
+    //     $service->variations = DB::table('variations')->where('service_id', $id)->get();
+
+    //     if (isset($service)) {
+    //         if ($request->has('attribute') && $request->attribute == 'service' && auth('api')->user()) {
+    //             $this->Searched_data_log(auth('api')->user()->id, 'service', $service->id, null);
+    //         }
+
+    //         if (auth('api')->user()) {
+    //             $this->visited_service_update(auth('api')->user()->id, $id);
+
+    //             //search log volume update
+    //             if ($request->has('attribute') && $request->attribute != 'service') {
+    //                 $this->search_log_volume_update(auth('api')->user()->id, $service->id);
+    //             }
+    //         }
+
+    //         $authUser = auth('api')->user();
+    //         if ($authUser) {
+    //             $recentView = $this->recentView->firstOrNew(['service_id' => $service->id, 'user_id' => $authUser->id]);
+    //             $recentView->total_service_view += 1;
+    //             $recentView->save();
+    //         }
+
+    //         //            return $service->variations;
+    //         $zone = $request->header('zoneID');
+    //         $service->variations = collect($service->variations)->where('zone_id', $zone)->values()->toArray();
+
+    //         $service['variations_app_format'] = self::variationsAppFormat($service, $request);
+    //         return response()->json(response_formatter(DEFAULT_200, $service), 200);
+    //     }
+    //     return response()->json(response_formatter(DEFAULT_204), 200);
+    // }
+
+     {
         $id = $request->id;
         $categoryIds = DB::table('category_zone')->where('zone_id', $request->header('zoneID'))
             ->pluck('category_id');
         $service = $this->service->where('id', $id)
-            ->with(['category.children', 'faqs' => function ($query) {
-                return $query->where('is_active', 1);
-            }])
+            ->with([
+                'category.children',
+                'category.extras',
+                'faqs' => function ($query) {
+                    return $query->where('is_active', 1);
+                }
+            ])
             ->whereIn('category_id', $categoryIds)
             ->ofStatus(1)
             ->first();
+
         $service->variations = DB::table('variations')->where('service_id', $id)->get();
 
         if (isset($service)) {
@@ -810,11 +859,11 @@ class ServiceController extends Controller
                 $recentView->save();
             }
 
-            //            return $service->variations;
             $zone = $request->header('zoneID');
             $service->variations = collect($service->variations)->where('zone_id', $zone)->values()->toArray();
 
             $service['variations_app_format'] = self::variationsAppFormat($service, $request);
+            $service['extras'] = $service->category->extras ?? [];
             return response()->json(response_formatter(DEFAULT_200, $service), 200);
         }
         return response()->json(response_formatter(DEFAULT_204), 200);
@@ -872,6 +921,59 @@ class ServiceController extends Controller
      * @param string $subCategoryId
      * @return JsonResponse
      */
+    // public function servicesBySubcategory(Request $request)
+    // {
+    //     $validator = Validator::make($request->all(), [
+    //         'limit' => 'required|numeric|min:1|max:200',
+    //         'offset' => 'required|numeric|min:1|max:100000',
+    //         'sub_category_id' => 'required',
+    //     ]);
+    //     if ($validator->fails()) {
+    //         return response()->json(response_formatter(DEFAULT_400, null, error_processor($validator)), 400);
+    //     }
+    //     try {
+    //         $zoneId = $request->header('zoneID');
+    //         $sub_category_id = $request->sub_category_id;
+    //         $servicesQuery = $this->service
+    //             ->with(['category.zonesBasicInfo', 'variations' => function ($q) use ($zoneId) {
+    //                 $q->where('zone_id', $zoneId);
+    //             }, 'service_discount', 'category.category_discount'])
+    //             ->where('sub_category_id', $sub_category_id)
+    //             ->where('is_active', 1)
+    //             ->where(function ($query) {
+    //                 $query->whereDoesntHave('service_discount')
+    //                     ->orWhereHas('service_discount')
+    //                     ->orWhere(function ($query) {
+    //                         $query->whereDoesntHave('category.category_discount')
+    //                             ->orWhereHas('category.category_discount');
+    //                     });
+    //             })
+    //             ->latest();
+
+    //         $services = $servicesQuery
+    //             ->paginate($request['limit'], ['*'], 'offset', $request['offset'])
+    //             ->withPath('');
+
+    //         foreach ($services as $service) {
+    //             $service['is_favorite'] = $this->favoriteService->where('customer_user_id', $this->customer_user_id)->where('service_id', $service->id)->exists() ? 1 : 0;
+    //         }
+
+    //         if (count($services) > 0) {
+    //             $authUser = auth('api')->user();
+    //             if ($authUser) {
+    //                 $recentView = $this->recentView->firstOrNew(['sub_category_id' => $sub_category_id, 'user_id' => $authUser->id]);
+    //                 $recentView->total_sub_category_view += 1;
+    //                 $recentView->save();
+    //             }
+    //             return response()->json(response_formatter(DEFAULT_200, self::variationMapper($services, $request)), 200);
+    //         }
+
+    //         return response()->json(response_formatter(DEFAULT_204), 200);
+    //     } catch (\Exception $e) {
+    //         return $e->getMessage() . '_' . $e->getLine();
+    //     }
+    // }
+
     public function servicesBySubcategory(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -886,27 +988,38 @@ class ServiceController extends Controller
             $zoneId = $request->header('zoneID');
             $sub_category_id = $request->sub_category_id;
             $servicesQuery = $this->service
-                ->with(['category.zonesBasicInfo', 'variations' => function ($q) use ($zoneId) {
-                    $q->where('zone_id', $zoneId);
-                }, 'service_discount', 'category.category_discount'])
-                ->where('sub_category_id', $sub_category_id)
-                ->where('is_active', 1)
-                ->where(function ($query) {
-                    $query->whereDoesntHave('service_discount')
-                        ->orWhereHas('service_discount')
-                        ->orWhere(function ($query) {
-                            $query->whereDoesntHave('category.category_discount')
-                                ->orWhereHas('category.category_discount');
-                        });
-                })
-                ->latest();
+              ->with([
+                  'category.zonesBasicInfo',
+                  'category.extras',
+                  'variations' => function ($q) use ($zoneId) {
+                      $q->where('zone_id', $zoneId);
+                  },
+                  'service_discount',
+                  'category.category_discount'
+              ])
+              ->where('sub_category_id', $sub_category_id)
+              ->where('is_active', 1)
+              ->where(function ($query) {
+                  $query->whereDoesntHave('service_discount')
+                      ->orWhereHas('service_discount')
+                      ->orWhere(function ($query) {
+                          $query->whereDoesntHave('category.category_discount')
+                              ->orWhereHas('category.category_discount');
+                      });
+              })
+              ->latest();
+
 
             $services = $servicesQuery
                 ->paginate($request['limit'], ['*'], 'offset', $request['offset'])
                 ->withPath('');
 
             foreach ($services as $service) {
-                $service['is_favorite'] = $this->favoriteService->where('customer_user_id', $this->customer_user_id)->where('service_id', $service->id)->exists() ? 1 : 0;
+                $service['is_favorite'] = $this->favoriteService
+                    ->where('customer_user_id', $this->customer_user_id)
+                    ->where('service_id', $service->id)
+                    ->exists() ? 1 : 0;
+                $service['extras'] = $service->category->extras ?? [];
             }
 
             if (count($services) > 0) {
