@@ -30,6 +30,7 @@ Route::group(['prefix' => 'provider', 'as' => 'provider.', 'namespace' => 'Api\V
 Route::group(['prefix' => 'provider', 'as' => 'provider.', 'namespace' => 'Api\V1\Provider', 'middleware' => ['auth:api']], function () {
 
     Route::get('/', 'ProviderController@index');
+     Route::get('get-notifications','ProviderController@pushNotificationProvider');
     Route::get('dashboard', 'ProviderController@dashboard');
     Route::get('transactions', 'ProviderController@Transactions'); 
     Route::get('get-bank-details', 'ProviderController@getBankDetails');
@@ -47,8 +48,6 @@ Route::group(['prefix' => 'provider', 'as' => 'provider.', 'namespace' => 'Api\V
     Route::get('transaction', 'ProviderController@transaction');
 
     Route::get('subscribed/sub-categories', 'ProviderController@subscribedSubCategories');
-
-    Route::get('get-notifications', [ProviderController::class, 'pushNotificationProvider']);
 
 
     Route::group(['prefix' => 'service', 'as' => 'service.',], function () {
