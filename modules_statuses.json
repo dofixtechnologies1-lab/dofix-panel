@@ -20,5 +20,6 @@
     "BidModule": true,
     "AddonModule": true,
     "Gateways": true,
-    "SystemModule": true
+    "SystemModule": true,
+    "Notification": true
 }
