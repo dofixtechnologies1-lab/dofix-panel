@@ -138,7 +138,7 @@ trait BookingTrait
                     if($request['payment_method'] == 'cash_after_service' || $request['payment_method'] == 'offline_payment'){
                         $is_paid = 0;
                     }else{
-                        $is_paid = 1;
+                        $is_paid = 0;
                     }
                 }
 
