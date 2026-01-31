@@ -28,6 +28,7 @@ use Modules\UserManagement\Entities\Serviceman;
 use Modules\UserManagement\Entities\User;
 use Modules\ServiceManagement\Entities\Service;
 use Modules\PaymentModule\Traits\SmsGateway;
+use Modules\CategoryManagement\Entities\CategoryExtra;
 
 class ProviderController extends Controller
 {
@@ -40,12 +41,13 @@ class ProviderController extends Controller
     private Review $review;
     private Advertisement $advertisement;
     private Service $service;
+    private CategoryExtra $extraCategory;
 
 
     protected Transaction $transaction;
 
 
-    public function __construct(Service $service, Transaction $transaction, SubscribedService $subscribedService, BankDetail $bankDetail, Provider $provider, Account $account, User $user, PushNotification $pushNotification, Serviceman $serviceman, Booking $booking, Review $review, Post $post, IgnoredPost $ignoredPost, Advertisement $advertisement)
+    public function __construct(Service $service, Transaction $transaction, SubscribedService $subscribedService, BankDetail $bankDetail, Provider $provider, Account $account, User $user, PushNotification $pushNotification, Serviceman $serviceman, Booking $booking, Review $review, Post $post, IgnoredPost $ignoredPost, Advertisement $advertisement, CategoryExtra $extraCategory,)
     {
         $this->bankDetail = $bankDetail;
         $this->provider = $provider;
@@ -62,6 +64,7 @@ class ProviderController extends Controller
         $this->ignoredPost = $ignoredPost;
         $this->advertisement = $advertisement;
         $this->service = $service;
+        $this->extraCategory = $extraCategory;
     }
 
     /**
