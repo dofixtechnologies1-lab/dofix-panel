@@ -1242,18 +1242,18 @@ class ProviderController extends Controller
             ->when($sortBy === 'top-rated', function ($query) {
                 return $query->orderBy('avg_rating', 'desc');
             })
-            ->when($sortBy === 'bookings-completed', function ($query) {
-                $query->withCount(['bookings' => function ($query) {
-                    $query->where('booking_status', 'completed');
-                }]);
-                $query->orderBy('bookings_count', 'desc');
-            })
-            ->when($sortBy !== 'bookings-completed', function ($query) {
-                return $query->withCount('bookings');
-            })
-            ->whereHas('subscribed_services', function ($query) use ($request, $booking) {
-                $query->where('sub_category_id', $booking->sub_category_id)->where('is_subscribed', 1);
-            })
+            // ->when($sortBy === 'bookings-completed', function ($query) {
+            //     $query->withCount(['bookings' => function ($query) {
+            //         $query->where('booking_status', 'completed');
+            //     }]);
+            //     $query->orderBy('bookings_count', 'desc');
+            // })
+            // ->when($sortBy !== 'bookings-completed', function ($query) {
+            //     return $query->withCount('bookings');
+            // })
+            // ->whereHas('subscribed_services', function ($query) use ($request, $booking) {
+            //     $query->where('sub_category_id', $booking->sub_category_id)->where('is_subscribed', 1);
+            // })
             ->when(business_config('suspend_on_exceed_cash_limit_provider', 'provider_config')->live_values, function ($query) {
                 $query->where('is_suspended', 0);
             })

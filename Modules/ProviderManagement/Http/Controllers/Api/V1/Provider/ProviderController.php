@@ -386,6 +386,7 @@ class ProviderController extends Controller
     }
 
     public function getAddons(Request $request): JsonResponse
+
     {
         $validator = Validator::make($request->all(), [
             'category_id'=>'required',
@@ -402,6 +403,8 @@ class ProviderController extends Controller
             ->where('status', 1);
 
         $services = $servicesQuery->get();
+        // dd(count($services));
+        
 
         if (count($services) > 0) {
 

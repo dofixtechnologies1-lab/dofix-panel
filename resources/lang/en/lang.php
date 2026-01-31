@@ -706,7 +706,6 @@
   'total_subscription' => 'Total subscription',
   'total_service_man' => 'Total service man',
   'total_booking_served' => 'Total booking served',
-  'registration_fee_status' => 'Registration Fee Status',
   'Total_Earning' => 'Total Earning',
   'Withdrawble_Amount' => 'Withdrawble Amount',
   'Already_Withdrawn' => 'Already Withdrawn',
@@ -5009,4 +5008,5 @@ _Message' => 'Customer notification for provider bid offer
   'image_format_-_jpg,_png,_jpeg,_gif_image_size_-_maximum_size_2_MB_Image_Ratio_-_1:1' => 'Image format - jpg, png, jpeg, gif image size - maximum size 2 MB Image Ratio - 1:1',
   'minimum_balance' => 'Minimum balance',
   'The bank doc must be an image.' => 'The bank doc must be an image.',
+  'The user type field is required.' => 'The user type field is required.',
 );
