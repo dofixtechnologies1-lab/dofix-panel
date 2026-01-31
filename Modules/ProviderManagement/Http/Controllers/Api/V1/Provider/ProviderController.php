@@ -386,41 +386,6 @@ class ProviderController extends Controller
     }
 
     public function getAddons(Request $request): JsonResponse
-    // {
-    //     $validator = Validator::make($request->all(), [
-    //         'sub_category_id' => 'required',
-    //     ]);
-
-    //     if ($validator->fails()) {
-    //         return response()->json(response_formatter(DEFAULT_400, null, error_processor($validator)), 400);
-    //     }
-
-    //     $sub_category_id = $request->sub_category_id;
-
-    //     $servicesQuery = $this->service
-    //         ->with(['category.zonesBasicInfo', 'variations', 'service_discount', 'category.category_discount'])
-    //         ->where('sub_category_id', $sub_category_id)
-    //         ->where('is_active', 1)
-    //         ->where(function ($query) {
-    //             $query->whereDoesntHave('service_discount')
-    //                 ->orWhereHas('service_discount')
-    //                 ->orWhere(function ($query) {
-    //                     $query->whereDoesntHave('category.category_discount')
-    //                         ->orWhereHas('category.category_discount');
-    //                 });
-    //         })
-    //         ->latest();
-
-    //     $services = $servicesQuery->get();
-
-    //     if (count($services) > 0) {
-
-    //         return response()->json(response_formatter(DEFAULT_200, self::variationMapper($services)), 200);
-    //     }
-
-    //     return response()->json(response_formatter(DEFAULT_204), 200);
-    // }
-
     {
         $validator = Validator::make($request->all(), [
             'category_id'=>'required',
@@ -433,7 +398,6 @@ class ProviderController extends Controller
         $category_id=$request->category_id;
 
         $servicesQuery = $this->extraCategory
-            ->with('category')
             ->where('category_id', $category_id)
             ->where('status', 1);
 
@@ -441,7 +405,7 @@ class ProviderController extends Controller
 
         if (count($services) > 0) {
 
-            return response()->json(response_formatter(DEFAULT_200, self::variationMapper($services)), 200);
+            return response()->json(response_formatter(DEFAULT_200, $services), 200);
         }
 
         return response()->json(response_formatter(DEFAULT_204), 200);
