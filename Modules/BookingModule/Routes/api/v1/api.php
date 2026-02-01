@@ -67,6 +67,8 @@ Route::group(['prefix' => 'provider', 'as' => 'provider.', 'namespace' => 'Api\V
         Route::put('schedule-update/{booking_id}', 'BookingController@scheduleUpdate');
         Route::put('assign-serviceman/{booking_id}', 'BookingController@assignServiceman');
         Route::get('data/download', 'BookingController@download');
+        Route::post('send/otp-customer', 'BookingController@sendOtp');
+        Route::post('verify/otp-provider', 'BookingController@verifyOtp');
 
         Route::get('opt/notification-send', 'BookingController@notificationSend');
 

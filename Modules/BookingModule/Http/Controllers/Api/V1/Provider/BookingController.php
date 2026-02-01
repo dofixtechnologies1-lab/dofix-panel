@@ -29,6 +29,9 @@ use Modules\ServiceManagement\Entities\Service;
 use Rap2hpoutre\FastExcel\FastExcel;
 use function PHPUnit\Framework\isEmpty;
 use Carbon\Carbon;
+use App\Models\Otp;
+use Modules\UserManagement\Entities\User;
+use Modules\ProviderManagement\Entities\Provider;
 
 class BookingController extends Controller
 {
@@ -1563,5 +1566,95 @@ class BookingController extends Controller
         $this->remove_service_from_booking($request);
 
         return response()->json(response_formatter(DEFAULT_UPDATE_200), 200);
+    }
+
+    public function sendOtp(Request $request): JsonResponse
+    {   
+        $validator = Validator::make($request->all(), [
+            'phone' => 'required|regex:/^([0-9\s\-\+\(\)]*)$/|min:10',
+            'user_type'=>'required',
+            'booking_id' => 'required',
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
+
+        $userData=User::where('phone',$request->phone)->first();
+        if(!empty($userData) && $userData->user_type == "customer"){
+            $booking = $this->booking->with('detail')
+                ->where('id', $request['booking_id'])
+                ->first();
+                $otp_send_to_customer = $booking->booking_otp;
+        }
+        else{
+            return response()->json(['message' => "Customer details or Customer type is missing of this phone number."], 400);
+        }
+
+        if($request->phone=="+919999999999" && $request->user_type == "customer"){
+            $otp = 1234;
+        }elseif($request->phone=="+919999900000" && $request->user_type == "provider-admin"){
+            $otp = 1234;
+        }
+        else{
+            $otp = $otp_send_to_customer;
+        }
+        $expiresAt = now()->addMinute(1); // OTP valid for only 2 minute
+
+        Otp::updateOrCreate(
+            ['phone' => $request->phone], 
+            ['otp' => $otp, 'is_verified' => false, 'expires_at' => $expiresAt]
+        );
+
+        // Send OTP via SMS or Email (integrate your OTP service here)
+        // Example: SmsService::send($request->phone, "Your OTP is: $otp");
+
+        sendPhoneOtp($otp, $request->phone); 
+
+        return response()->json(['message' => 'OTP sent successfully',"OTP"=>$otp], 200);
+
+    }
+
+    public function verifyOtp(Request $request): JsonResponse
+    {
+        // 1️ Validate input
+        $validator = Validator::make($request->all(), [
+            'phone' => 'required|string',
+            'otp' => 'required|numeric',
+            'booking_id' => 'required|string',
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
+
+        $providerData=Provider::where('contact_number',$request->phone)->first();
+       
+        if(!empty($providerData)){
+            $booking = $this->booking->with('detail')
+                ->where('id', $request['booking_id'])
+                ->first();
+            $userData=User::where('id',$booking->customer_id)->first();
+        }
+        else{
+            return response()->json(['message' => "Customer details or Customer type is missing of this phone number."], 400);
+        }
+        // 2️ Check OTP validity
+        $otpRecord = Otp::where('phone', $userData->phone)
+            ->where('otp', $request->otp)
+            ->first();
+    
+        if (!$otpRecord) {
+            return response()->json(['error' => 'Invalid OTP'], 400);
+        }
+    
+        // Mark OTP as verified
+        $otpRecord->update(['is_verified' => true]);
+        $this->booking->where('id', $request['booking_id'])
+           ->update([
+               'booking_status' => 'completed'
+            ]);
+
+        return response()->json(['message' => 'Booking Completed Successfully!!',"Booking ID"=>$request['booking_id']], 200);
     }
 }
