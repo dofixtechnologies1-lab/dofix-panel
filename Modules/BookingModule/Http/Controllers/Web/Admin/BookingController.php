@@ -1677,6 +1677,22 @@ class BookingController extends Controller
         return view('bookingmodule::admin.booking.invoice', compact('booking'));
     }
 
+
+    /**
+     * Display a listing of the resource.
+     * @param $id
+     * @param Request $request
+     * @return Renderable
+     */
+    public function singleProviderInvoice(){
+        $booking = $this->booking->with(['detail.service' => function ($query) {
+            $query->withTrashed();
+        }, 'customer', 'provider', 'service_address', 'serviceman', 'service_address', 'status_histories.user'])->find($id);
+
+        return view('bookingmodule::admin.booking.invoice', compact('booking'));
+
+    }
+
     /**
      * Display a listing of the resource.
      * @param $id
