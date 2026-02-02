@@ -91,230 +91,298 @@ class ServiceController extends Controller
         return response()->json(response_formatter(DEFAULT_200, self::variationMapper($services)), 200);
     }
 
+    // public function search(Request $request): JsonResponse
+    // {
+    //     $validator = Validator::make($request->all(), [
+    //         'limit' => 'required|numeric|min:1|max:200',
+    //         'offset' => 'required|numeric|min:1|max:100000',
+    //         'string' => 'nullable',
+    //         'sort_by' => 'nullable|in:a_to_z,z_to_a,high_to_low,low_to_high',
+    //         'sort_by_type' => 'nullable|in:default,top_rated,most_loved,popular,newest,recommended,trending',
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json(response_formatter(DEFAULT_400, null, error_processor($validator)), 400);
+    //     }
+
+    //     $searchString = $request->input('string');
+    //     $decodedString = $searchString;
+    //     $keys = explode(' ', $decodedString);
+    //     $zoneId = Config::get('zone_id');
+
+    //     $authUser = auth('api')->user();
+    //     if ($authUser) {
+    //         $this->recentSearch->Create(['user_id' => $authUser->id, 'keyword' => $decodedString]);
+    //     }
+
+    //     $servicesQuery = $this->service
+    //         ->select('services.*')
+    //         ->selectRaw('CAST((SELECT MIN(variations.price) FROM variations WHERE variations.service_id = services.id AND variations.price > 0 AND variations.zone_id = ?) AS DECIMAL(24, 2)) as service_filter_min_price', [$zoneId])
+    //         ->with(['category.zonesBasicInfo', 'variations', 'tags', 'faqs', 'favorites', 'service_discount', 'category.category_discount'])
+    //         ->withCount('favorites', 'bookings')
+    //         ->active()
+    //         // ->where(function ($query) use ($decodedString, $keys) {
+    //         //     foreach ($keys as $key) {
+    //         //         $query->orWhere('name', 'LIKE', '%' . $key . '%');
+    //         //         $query->orWhere('short_description', 'LIKE', '%' . $decodedString . '%');
+    //         //         $query->orWhere('description', 'LIKE', '%' . $decodedString . '%');
+    //         //         $query->orWhereHas('variations', function ($query) use ($key) {
+    //         //             $query->where('variant', 'like', "%{$key}%");
+    //         //         });
+    //         //         $query->orWhereHas('category', function ($query) use ($key) {
+    //         //             $query->where('name', 'like', "%{$key}%");
+    //         //         });
+    //         //         $query->orWhereHas('subCategory', function ($query) use ($key) {
+    //         //             $query->where('name', 'like', "%{$key}%");
+    //         //         });
+    //         //         $query->orWhereHas('tags', function ($query) use ($key) {
+    //         //             $query->where('tag', 'like', "%{$key}%");
+    //         //         });
+    //         //         $query->orWhereHas('faqs', function ($query) use ($key) {
+    //         //             $query->where('question', 'like', "%{$key}%");
+    //         //         });
+    //         //         $query->orWhereHas('translations', function ($query) use ($key) {
+    //         //             $query->where(function ($query) use ($key) {
+    //         //                 $query->where('key', 'name')
+    //         //                     ->where('value', 'like', "%{$key}%");
+    //         //             })
+    //         //                 ->orWhere(function ($query) use ($key) {
+    //         //                     $query->where('key', 'short_description')
+    //         //                         ->where('value', 'like', "%{$key}%");
+    //         //                 })
+    //         //                 ->orWhere(function ($query) use ($key) {
+    //         //                     $query->where('key', 'description')
+    //         //                         ->where('value', 'like', "%{$key}%");
+    //         //                 });
+    //         //         });
+    //         //     }
+    //         // })
+    //         ->where(function ($query) use ($decodedString, $keys) {
+    //             // Match the full search string once
+    //             $query->where(function ($q) use ($decodedString) {
+    //                 $q->where('name', 'LIKE', "%{$decodedString}%")
+    //                     ->orWhere('short_description', 'LIKE', "%{$decodedString}%")
+    //                     ->orWhere('description', 'LIKE', "%{$decodedString}%");
+    //             });
+
+    //             // Then match any of the individual words
+    //             foreach ($keys as $key) {
+    //                 $query->orWhere(function ($q) use ($key) {
+    //                     $q->where('name', 'LIKE', "%{$key}%")
+    //                         ->orWhereHas('variations', fn($q) => $q->where('variant', 'LIKE', "%{$key}%"))
+    //                         ->orWhereHas('category', fn($q) => $q->where('name', 'LIKE', "%{$key}%"))
+    //                         ->orWhereHas('subCategory', fn($q) => $q->where('name', 'LIKE', "%{$key}%"))
+    //                         ->orWhereHas('tags', fn($q) => $q->where('tag', 'LIKE', "%{$key}%"))
+    //                         ->orWhereHas('faqs', fn($q) => $q->where('question', 'LIKE', "%{$key}%"))
+    //                         ->orWhereHas('translations', function ($q) use ($key) {
+    //                             $q->where(function ($q) use ($key) {
+    //                                 $q->where('key', 'name')->where('value', 'LIKE', "%{$key}%");
+    //                             })
+    //                                 ->orWhere(function ($q) use ($key) {
+    //                                     $q->where('key', 'short_description')->where('value', 'LIKE', "%{$key}%");
+    //                                 })
+    //                                 ->orWhere(function ($q) use ($key) {
+    //                                     $q->where('key', 'description')->where('value', 'LIKE', "%{$key}%");
+    //                                 });
+    //                         });
+    //                 });
+    //             }
+    //         })
+    //         //            ->where(function ($query) {
+    //         //                $query->whereDoesntHave('service_discount')
+    //         //                    ->orWhereHas('service_discount');
+    //         //            })
+    //         //            ->orWhere(function ($query) {
+    //         //                $query->whereDoesntHave('category.category_discount')
+    //         //                    ->orWhereHas('category.category_discount');
+    //         //            })
+
+    //         ->when(!is_null($request['rating']), function ($query) use ($request) {
+    //             return $query->where('avg_rating', '>=', $request['rating']);
+    //         })
+    //         ->when(isset($request['category_ids']) && is_array($request['category_ids']), function ($query) use ($request) {
+    //             return $query->whereIn('category_id', $request['category_ids']);
+    //         })
+    //         ->when(isset($request['sort_by_type']) && !is_null($request['sort_by_type']), function ($query) use ($request) {
+    //             return $query->when($request['sort_by_type'] == 'top_rated', function ($query) {
+    //                 return $query->orderBy('avg_rating', 'DESC');
+    //             })
+    //                 ->when($request['sort_by_type'] == 'most_loved', function ($query) {
+    //                     return $query->orderBy('order_count', 'DESC')
+    //                         ->orderByDesc('favorites_count');
+    //                 })
+    //                 ->when($request['sort_by_type'] == 'popular', function ($query) {
+    //                     return $query->orderByDesc('bookings_count');
+    //                 })
+    //                 ->when($request['sort_by_type'] == 'newest', function ($query) {
+    //                     return $query->orderBy('created_at', 'DESC');
+    //                 })
+    //                 ->when($request['sort_by_type'] == 'recommended', function ($query) {
+    //                     return $query->when($this->is_customer_logged_in, function ($query) {
+    //                         $categoryIds = $this->booking->where('customer_id', auth('api')->user()->id)->get()->pluck('category_id');
+    //                         if ($categoryIds->count() > 0) {
+    //                             $query->whereHas('category', function ($query) use ($categoryIds) {
+    //                                 $query->whereIn('category_id', $categoryIds);
+    //                             });
+    //                         } else {
+    //                             $query->inRandomOrder();
+    //                         }
+    //                     })->when(!$this->is_customer_logged_in, function ($query) {
+    //                         $query->inRandomOrder();
+    //                     });
+    //                 })
+    //                 ->when($request['sort_by_type'] == 'trending', function ($query) {
+    //                     return $query->when($this->booking->count() > 0, function ($query) {
+    //                         $query->whereHas('bookings', function ($query) {
+    //                             $query->where('created_at', '>', now()->subDays(30)->endOfDay());
+    //                         })->orderBy('bookings_count', 'desc');
+    //                     });
+    //                 });
+    //         })
+    //         ->when(isset($request['sort_by']) && $request['sort_by'] != null, function ($query) use ($request) {
+    //             switch ($request['sort_by']) {
+    //                 case 'a_to_z':
+    //                     $query->orderBy('name', 'asc');
+    //                     break;
+    //                 case 'z_to_a':
+    //                     $query->orderBy('name', 'desc');
+    //                     break;
+    //                 case 'high_to_low':
+    //                     $query->orderBy('service_filter_min_price', 'desc');
+    //                     break;
+    //                 case 'low_to_high':
+    //                     $query->orderBy('service_filter_min_price', 'asc');
+    //                     break;
+    //                 default:
+    //                     $query->orderBy('created_at', 'desc');
+    //                     break;
+    //             }
+    //         })
+    //         ->when($request['min_price'] !== null && $request['max_price'] !== null && $request['max_price'] > 0, function ($query) use ($request) {
+    //             $query->havingRaw('service_filter_min_price >= ? AND service_filter_min_price <= ?', [$request['min_price'], $request['max_price']]);
+    //         })
+    //         ->when(is_null($request['sort_by_type']) && is_null($request['sort_by']), function ($query) use ($decodedString) {
+    //             $query->orderByRaw("
+    //                 CASE
+    //                     WHEN name = '$decodedString' THEN 0
+    //                     WHEN name LIKE '$decodedString%' THEN 1
+    //                     WHEN name LIKE '%$decodedString%' THEN 2
+    //                     WHEN name LIKE '%$decodedString' THEN 3
+    //                     ELSE 4
+    //                 END
+    //             ");
+    //         });
+
+    //     $variationPriceFilter = $servicesQuery->get();
+
+    //     if ($authUser) {
+    //         $recentSearch = RecentSearch::where('keyword', $decodedString)->oldest()->first();
+    //         $this->Searched_data_log($authUser->id, 'search', $recentSearch->id, count($variationPriceFilter));
+    //     }
+
+    //     $price = [];
+    //     foreach ($variationPriceFilter as $key => $service) {
+    //         $minPrice = null;
+    //         $minPriceVariation = null;
+    //         foreach ($service->variations as $variation) {
+    //             if ($minPrice === null || $variation->price < $minPrice) {
+    //                 $minPrice = $variation->price;
+    //                 $minPriceVariation = $variation;
+    //             }
+    //         }
+    //         if ($minPriceVariation !== null) {
+    //             $price[] = $minPriceVariation->price;
+    //         }
+    //     }
+
+    //     $filterMinPrice = count($price) > 0 ? min($price) : 0;
+    //     $filterMaxPrice = count($price) > 0 ? max($price) : 0;
+
+    //     $initialMinPrice = Variation::min('price');
+    //     $initialMaxPrice = Variation::max('price');
+
+    //     $services = $servicesQuery->paginate($request['limit'], ['*'], 'offset', $request['offset'])->withPath('');
+
+    //     foreach ($services as $service) {
+    //         $service['is_favorite'] = $this->favoriteService->where('customer_user_id', $this->customer_user_id)->where('service_id', $service->id)->exists() ? 1 : 0;
+    //         unset($service->tags, $service->faqs, $service->favorites);
+    //     }
+
+    //     return response()->json(response_formatter(DEFAULT_200, [
+    //         'filter_min_price' => $filterMinPrice == $filterMaxPrice ? 0 : $filterMinPrice,
+    //         'filter_max_price' => $filterMaxPrice,
+    //         'initial_min_price' => $initialMinPrice == $initialMaxPrice ? 0 : $initialMinPrice,
+    //         'initial_max_price' => $initialMaxPrice,
+    //         'services' => self::variationMapper($services)
+    //     ]), 200);
+    // }
+
     public function search(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'limit' => 'required|numeric|min:1|max:200',
             'offset' => 'required|numeric|min:1|max:100000',
-            'string' => 'nullable',
+            'search' => 'nullable',
             'sort_by' => 'nullable|in:a_to_z,z_to_a,high_to_low,low_to_high',
             'sort_by_type' => 'nullable|in:default,top_rated,most_loved,popular,newest,recommended,trending',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json(response_formatter(DEFAULT_400, null, error_processor($validator)), 400);
-        }
-
-        $searchString = $request->input('string');
+        $searchString = $request->input('search');
         $decodedString = $searchString;
-        $keys = explode(' ', $decodedString);
-        $zoneId = Config::get('zone_id');
-
+        $keys = $decodedString ? explode(' ', $decodedString) : [];
+        // $zoneId = Config::get('zone_id');
+        
         $authUser = auth('api')->user();
-        if ($authUser) {
-            $this->recentSearch->Create(['user_id' => $authUser->id, 'keyword' => $decodedString]);
+        if ($authUser && $decodedString) {
+            $this->recentSearch->create([
+                'user_id' => $authUser->id,
+                'keyword' => $decodedString
+            ]);
         }
-
-        $servicesQuery = $this->service
-            ->select('services.*')
-            ->selectRaw('CAST((SELECT MIN(variations.price) FROM variations WHERE variations.service_id = services.id AND variations.price > 0 AND variations.zone_id = ?) AS DECIMAL(24, 2)) as service_filter_min_price', [$zoneId])
-            ->with(['category.zonesBasicInfo', 'variations', 'tags', 'faqs', 'favorites', 'service_discount', 'category.category_discount'])
-            ->withCount('favorites', 'bookings')
-            ->active()
-            // ->where(function ($query) use ($decodedString, $keys) {
-            //     foreach ($keys as $key) {
-            //         $query->orWhere('name', 'LIKE', '%' . $key . '%');
-            //         $query->orWhere('short_description', 'LIKE', '%' . $decodedString . '%');
-            //         $query->orWhere('description', 'LIKE', '%' . $decodedString . '%');
-            //         $query->orWhereHas('variations', function ($query) use ($key) {
-            //             $query->where('variant', 'like', "%{$key}%");
-            //         });
-            //         $query->orWhereHas('category', function ($query) use ($key) {
-            //             $query->where('name', 'like', "%{$key}%");
-            //         });
-            //         $query->orWhereHas('subCategory', function ($query) use ($key) {
-            //             $query->where('name', 'like', "%{$key}%");
-            //         });
-            //         $query->orWhereHas('tags', function ($query) use ($key) {
-            //             $query->where('tag', 'like', "%{$key}%");
-            //         });
-            //         $query->orWhereHas('faqs', function ($query) use ($key) {
-            //             $query->where('question', 'like', "%{$key}%");
-            //         });
-            //         $query->orWhereHas('translations', function ($query) use ($key) {
-            //             $query->where(function ($query) use ($key) {
-            //                 $query->where('key', 'name')
-            //                     ->where('value', 'like', "%{$key}%");
-            //             })
-            //                 ->orWhere(function ($query) use ($key) {
-            //                     $query->where('key', 'short_description')
-            //                         ->where('value', 'like', "%{$key}%");
-            //                 })
-            //                 ->orWhere(function ($query) use ($key) {
-            //                     $query->where('key', 'description')
-            //                         ->where('value', 'like', "%{$key}%");
-            //                 });
-            //         });
-            //     }
-            // })
-            ->where(function ($query) use ($decodedString, $keys) {
-                // Match the full search string once
-                $query->where(function ($q) use ($decodedString) {
-                    $q->where('name', 'LIKE', "%{$decodedString}%")
-                        ->orWhere('short_description', 'LIKE', "%{$decodedString}%")
-                        ->orWhere('description', 'LIKE', "%{$decodedString}%");
-                });
-
-                // Then match any of the individual words
+        
+        $query = Service::query()
+            // ->where('zone_id', $zoneId)
+            ->where('is_active', 1);
+        
+        if (!empty($keys)) {
+            $query->where(function ($q) use ($keys) {
                 foreach ($keys as $key) {
-                    $query->orWhere(function ($q) use ($key) {
-                        $q->where('name', 'LIKE', "%{$key}%")
-                            ->orWhereHas('variations', fn($q) => $q->where('variant', 'LIKE', "%{$key}%"))
-                            ->orWhereHas('category', fn($q) => $q->where('name', 'LIKE', "%{$key}%"))
-                            ->orWhereHas('subCategory', fn($q) => $q->where('name', 'LIKE', "%{$key}%"))
-                            ->orWhereHas('tags', fn($q) => $q->where('tag', 'LIKE', "%{$key}%"))
-                            ->orWhereHas('faqs', fn($q) => $q->where('question', 'LIKE', "%{$key}%"))
-                            ->orWhereHas('translations', function ($q) use ($key) {
-                                $q->where(function ($q) use ($key) {
-                                    $q->where('key', 'name')->where('value', 'LIKE', "%{$key}%");
-                                })
-                                    ->orWhere(function ($q) use ($key) {
-                                        $q->where('key', 'short_description')->where('value', 'LIKE', "%{$key}%");
-                                    })
-                                    ->orWhere(function ($q) use ($key) {
-                                        $q->where('key', 'description')->where('value', 'LIKE', "%{$key}%");
-                                    });
-                            });
-                    });
+                    $q->orWhere('name', 'LIKE', "%{$key}%");
                 }
-            })
-            //            ->where(function ($query) {
-            //                $query->whereDoesntHave('service_discount')
-            //                    ->orWhereHas('service_discount');
-            //            })
-            //            ->orWhere(function ($query) {
-            //                $query->whereDoesntHave('category.category_discount')
-            //                    ->orWhereHas('category.category_discount');
-            //            })
-
-            ->when(!is_null($request['rating']), function ($query) use ($request) {
-                return $query->where('avg_rating', '>=', $request['rating']);
-            })
-            ->when(isset($request['category_ids']) && is_array($request['category_ids']), function ($query) use ($request) {
-                return $query->whereIn('category_id', $request['category_ids']);
-            })
-            ->when(isset($request['sort_by_type']) && !is_null($request['sort_by_type']), function ($query) use ($request) {
-                return $query->when($request['sort_by_type'] == 'top_rated', function ($query) {
-                    return $query->orderBy('avg_rating', 'DESC');
-                })
-                    ->when($request['sort_by_type'] == 'most_loved', function ($query) {
-                        return $query->orderBy('order_count', 'DESC')
-                            ->orderByDesc('favorites_count');
-                    })
-                    ->when($request['sort_by_type'] == 'popular', function ($query) {
-                        return $query->orderByDesc('bookings_count');
-                    })
-                    ->when($request['sort_by_type'] == 'newest', function ($query) {
-                        return $query->orderBy('created_at', 'DESC');
-                    })
-                    ->when($request['sort_by_type'] == 'recommended', function ($query) {
-                        return $query->when($this->is_customer_logged_in, function ($query) {
-                            $categoryIds = $this->booking->where('customer_id', auth('api')->user()->id)->get()->pluck('category_id');
-                            if ($categoryIds->count() > 0) {
-                                $query->whereHas('category', function ($query) use ($categoryIds) {
-                                    $query->whereIn('category_id', $categoryIds);
-                                });
-                            } else {
-                                $query->inRandomOrder();
-                            }
-                        })->when(!$this->is_customer_logged_in, function ($query) {
-                            $query->inRandomOrder();
-                        });
-                    })
-                    ->when($request['sort_by_type'] == 'trending', function ($query) {
-                        return $query->when($this->booking->count() > 0, function ($query) {
-                            $query->whereHas('bookings', function ($query) {
-                                $query->where('created_at', '>', now()->subDays(30)->endOfDay());
-                            })->orderBy('bookings_count', 'desc');
-                        });
-                    });
-            })
-            ->when(isset($request['sort_by']) && $request['sort_by'] != null, function ($query) use ($request) {
-                switch ($request['sort_by']) {
-                    case 'a_to_z':
-                        $query->orderBy('name', 'asc');
-                        break;
-                    case 'z_to_a':
-                        $query->orderBy('name', 'desc');
-                        break;
-                    case 'high_to_low':
-                        $query->orderBy('service_filter_min_price', 'desc');
-                        break;
-                    case 'low_to_high':
-                        $query->orderBy('service_filter_min_price', 'asc');
-                        break;
-                    default:
-                        $query->orderBy('created_at', 'desc');
-                        break;
-                }
-            })
-            ->when($request['min_price'] !== null && $request['max_price'] !== null && $request['max_price'] > 0, function ($query) use ($request) {
-                $query->havingRaw('service_filter_min_price >= ? AND service_filter_min_price <= ?', [$request['min_price'], $request['max_price']]);
-            })
-            ->when(is_null($request['sort_by_type']) && is_null($request['sort_by']), function ($query) use ($decodedString) {
-                $query->orderByRaw("
-                    CASE
-                        WHEN name = '$decodedString' THEN 0
-                        WHEN name LIKE '$decodedString%' THEN 1
-                        WHEN name LIKE '%$decodedString%' THEN 2
-                        WHEN name LIKE '%$decodedString' THEN 3
-                        ELSE 4
-                    END
-                ");
             });
-
-        $variationPriceFilter = $servicesQuery->get();
-
-        if ($authUser) {
-            $recentSearch = RecentSearch::where('keyword', $decodedString)->oldest()->first();
-            $this->Searched_data_log($authUser->id, 'search', $recentSearch->id, count($variationPriceFilter));
         }
-
-        $price = [];
-        foreach ($variationPriceFilter as $key => $service) {
-            $minPrice = null;
-            $minPriceVariation = null;
-            foreach ($service->variations as $variation) {
-                if ($minPrice === null || $variation->price < $minPrice) {
-                    $minPrice = $variation->price;
-                    $minPriceVariation = $variation;
-                }
-            }
-            if ($minPriceVariation !== null) {
-                $price[] = $minPriceVariation->price;
-            }
+        
+        // Sorting
+        switch ($request->sort_by) {
+            case 'a_to_z':
+                $query->orderBy('name', 'asc');
+                break;
+            case 'z_to_a':
+                $query->orderBy('name', 'desc');
+                break;
+            case 'high_to_low':
+                $query->orderBy('avg_rating', 'desc');
+                break;
+            case 'low_to_high':
+                $query->orderBy('avg_rating', 'asc');
+                break;
         }
+        
+        // Pagination
+        $services = $query
+         ->skip($request->offset)
+         ->take($request->limit)
+         ->get([
+             'id',
+             'name',
+             'cover_image',
+             'short_description'
+         ]);
 
-        $filterMinPrice = count($price) > 0 ? min($price) : 0;
-        $filterMaxPrice = count($price) > 0 ? max($price) : 0;
 
-        $initialMinPrice = Variation::min('price');
-        $initialMaxPrice = Variation::max('price');
-
-        $services = $servicesQuery->paginate($request['limit'], ['*'], 'offset', $request['offset'])->withPath('');
-
-        foreach ($services as $service) {
-            $service['is_favorite'] = $this->favoriteService->where('customer_user_id', $this->customer_user_id)->where('service_id', $service->id)->exists() ? 1 : 0;
-            unset($service->tags, $service->faqs, $service->favorites);
-        }
-
-        return response()->json(response_formatter(DEFAULT_200, [
-            'filter_min_price' => $filterMinPrice == $filterMaxPrice ? 0 : $filterMinPrice,
-            'filter_max_price' => $filterMaxPrice,
-            'initial_min_price' => $initialMinPrice == $initialMaxPrice ? 0 : $initialMinPrice,
-            'initial_max_price' => $initialMaxPrice,
-            'services' => self::variationMapper($services)
-        ]), 200);
+        
+        return response()->json(response_formatter(DEFAULT_200, $services), 200);
+        
     }
 
     public function searchSuggestions(Request $request)
