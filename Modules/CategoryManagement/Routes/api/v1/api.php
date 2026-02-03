@@ -43,6 +43,7 @@ Route::group(['prefix' => 'customer', 'as'=>'customer.', 'namespace' => 'Api\V1\
     Route::group(['prefix' => 'category', 'as'=>'category.'], function () {
         Route::get('/', 'CategoryController@index');
         Route::get('childes', 'CategoryController@childes');
+        Route::post('category-extra', [CategoryController::class, 'CategoryExtraData']);
     });
     Route::get('sub-categories', 'SubCategoryController@index');
     Route::get('featured-categories', [CategoryController::class, 'featured']);

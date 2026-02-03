@@ -45,8 +45,8 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'namespace' => 'Web\Admin',
         Route::any('serviceman-fullbooking-single-invoice/{id}/{lang}', [BookingController::class, 'servicemanFullBookingSingleInvoice'])->withoutMiddleware('admin');
         // Route::any('customer-invoice/{id}/{lang}', [BookingController::class, 'customerInvoice'])->withoutMiddleware('admin');
         Route::any('customer-invoice/{id}', [BookingController::class, 'customerInvoice'])->withoutMiddleware('admin');
-        Route::any('provider-invoice/{id}', [BookingController::class, 'singleProviderInvoice'])->withoutMiddleware('admin');
-        Route::any('provider-invoice/{id}/{lang}', [BookingController::class, 'providerInvoice'])->withoutMiddleware('admin');
+        Route::any('provider-invoice/{id}', [BookingController::class, 'providerInvoice'])->withoutMiddleware('admin');
+        // Route::any('provider-invoice/{id}/{lang}', [BookingController::class, 'providerInvoice'])->withoutMiddleware('admin');
         Route::any('serviceman-invoice/{id}/{lang}', [BookingController::class, 'servicemanInvoice'])->withoutMiddleware('admin');
 
         Route::any('switch-payment-method/{id}', [BookingController::class, 'switchPaymentMethod'])->name('switch-payment-method');
