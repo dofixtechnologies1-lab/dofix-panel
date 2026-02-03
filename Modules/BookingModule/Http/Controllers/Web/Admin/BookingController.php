@@ -1667,9 +1667,19 @@ class BookingController extends Controller
      * @param Request $request
      * @return Renderable
      */
-    public function providerInvoice($id, $lang): Renderable
+    // public function providerInvoice($id, $lang): Renderable
+    // {
+    //     App::setLocale($lang);
+    //     $booking = $this->booking->with(['detail.service' => function ($query) {
+    //         $query->withTrashed();
+    //     }, 'customer', 'provider', 'service_address', 'serviceman', 'service_address', 'status_histories.user'])->find($id);
+
+    //     return view('bookingmodule::admin.booking.invoice', compact('booking'));
+    // }
+
+    public function providerInvoice($id): Renderable
     {
-        App::setLocale($lang);
+        // App::setLocale($lang);
         $booking = $this->booking->with(['detail.service' => function ($query) {
             $query->withTrashed();
         }, 'customer', 'provider', 'service_address', 'serviceman', 'service_address', 'status_histories.user'])->find($id);
