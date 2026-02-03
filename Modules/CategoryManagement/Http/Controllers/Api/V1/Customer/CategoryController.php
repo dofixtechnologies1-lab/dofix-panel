@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Validator;
 use Modules\CategoryManagement\Entities\Category;
 use Modules\ServiceManagement\Entities\FavoriteService;
 use Modules\ServiceManagement\Entities\RecentView;
+use Modules\CategoryManagement\Entities\CategoryExtra;
 
 class CategoryController extends Controller
 {
@@ -17,14 +18,16 @@ class CategoryController extends Controller
     private Category $category;
     private RecentView $recentView;
     private FavoriteService $favoriteService;
+    private CategoryExtra $categoryExtras;
     private bool $is_customer_logged_in;
     private mixed $customer_user_id;
 
-    public function __construct(Category $category, RecentView $recentView, FavoriteService $favoriteService, Request $request)
+    public function __construct(Category $category, RecentView $recentView, FavoriteService $favoriteService, Request $request, CategoryExtra $categoryExtras)
     {
         $this->category = $category;
         $this->recentView = $recentView;
         $this->favoriteService = $favoriteService;
+        $this->categoryExtras = $categoryExtras;
 
         $this->is_customer_logged_in = (bool)auth('api')->user();
         $this->customer_user_id = $this->is_customer_logged_in ? auth('api')->user()->id : $request['guest_id'];
@@ -235,6 +238,46 @@ if($categories?->services_by_category){
             ];
         }
         return $formatting;
+    }
+
+    /**
+     * Display a listing of the resource.
+     * @param Request $request
+     * @return JsonResponse
+     */
+
+    public function CategoryExtraData(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'category_id' => 'required',
+        ]);
+        
+        if ($validator->fails()) {
+            return response()->json(
+                response_formatter(DEFAULT_400, null, error_processor($validator)),
+                400
+            );
+        }
+    
+        try {
+            $categoryExtras = $this->categoryExtras
+                ->where('category_id', $request->category_id)
+                ->where('status', 1)
+                ->get();
+    
+            return response()->json(
+                response_formatter(DEFAULT_200, $categoryExtras),
+                200
+            );
+    
+        } catch (\Throwable $e) {
+            return response()->json(
+                response_formatter(DEFAULT_500, null, [
+                    'error' => $e->getMessage()
+                ]),
+                500
+            );
+        }
     }
 
     public function homePageSliderCategories(Request $request): JsonResponse
