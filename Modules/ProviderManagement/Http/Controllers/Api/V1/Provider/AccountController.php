@@ -226,11 +226,22 @@ class AccountController extends Controller
         $providerId = $this->provider::where('user_id', $userId)->value('id');
   
 
-        $amount   = $request->amount;   
+        // $amount   = $request->amount;   
+        // $amount = preg_replace('/[^0-9.]/', '', $amount);  
+
+        // $paymentUrl = url('payment/wallet-recharge') . '?' .
+        //     'provider_id=' . $providerId . '&' .
+        //     'amount=' . $amount . '&' .
+        //     'access_token=' . base64_encode($userId) . '&' . 
+        //     'wallet_status=' . 'wallet_recharge' . '&' .
+        //     http_build_query($request->all());
+        
+        $amount   = $request->amount; 
+        $trim_amount =trim(str_replace('₹', '', $request->amount));
 
         $paymentUrl = url('payment/wallet-recharge') . '?' .
             'provider_id=' . $providerId . '&' .
-            'amount=' . $amount . '&' .
+            'amount=' . $trim_amount . '&' .
             'access_token=' . base64_encode($userId) . '&' . 
             'wallet_status=' . 'wallet_recharge' . '&' .
             http_build_query($request->all());

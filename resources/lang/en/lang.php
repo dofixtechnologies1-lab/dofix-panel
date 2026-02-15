@@ -5009,4 +5009,6 @@ _Message' => 'Customer notification for provider bid offer
   'minimum_balance' => 'Minimum balance',
   'The bank doc must be an image.' => 'The bank doc must be an image.',
   'The user type field is required.' => 'The user type field is required.',
+  'The bank doc must not be greater than 10000 kilobytes.' => 'The bank doc must not be greater than 10000 kilobytes.',
+  'registration_fee' => 'Registration fee',
 );

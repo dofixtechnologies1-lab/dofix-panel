@@ -904,7 +904,9 @@ class ServiceController extends Controller
             ->ofStatus(1)
             ->first();
 
-        $service->variations = DB::table('variations')->where('service_id', $id)->get();
+        $service->variations = DB::table('variations')->where('service_id', $id)
+        ->where('zone_id', $request->header('zoneID'))
+        ->get();
 
         if (isset($service)) {
             if ($request->has('attribute') && $request->attribute == 'service' && auth('api')->user()) {

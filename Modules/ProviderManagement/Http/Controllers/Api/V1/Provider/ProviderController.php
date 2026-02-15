@@ -390,25 +390,51 @@ class ProviderController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'category_id'=>'required',
+            'sub_category_id' => 'required'
         ]);
+        // print_r($request->all());
+        // die;
 
         if ($validator->fails()) {
             return response()->json(response_formatter(DEFAULT_400, null, error_processor($validator)), 400);
         }
 
         $category_id=$request->category_id;
+        $sub_category_id=$request->sub_category_id;
+        
+        
+        $servicesQuery = $this->service
+               ->with([
+                   'category.zonesBasicInfo',
+                   'variations',
+                   'service_discount',
+                   'category.category_discount',
+               ])
+               ->where('sub_category_id', $sub_category_id)
+               ->where('is_active', 1)
+               ->where(function ($query) {
+                   $query->whereDoesntHave('service_discount')
+                         ->orWhereHas('category.category_discount');
+               })
+               ->latest();
+               $services = $servicesQuery->get();
 
-        $servicesQuery = $this->extraCategory
-            ->where('category_id', $category_id)
-            ->where('status', 1);
 
-        $services = $servicesQuery->get();
+               $extraServices = $this->extraCategory
+                   ->where('category_id', $category_id)
+                   ->where('status', 1)
+                   ->get();
+               
+               $mergedServices = $services->merge($extraServices);
+            //   print_r($mergedServices);
+            //   die;
+
         // dd(count($services));
         
 
         if (count($services) > 0) {
 
-            return response()->json(response_formatter(DEFAULT_200, $services), 200);
+            return response()->json(response_formatter(DEFAULT_200, $mergedServices), 200);
         }
 
         return response()->json(response_formatter(DEFAULT_204), 200);

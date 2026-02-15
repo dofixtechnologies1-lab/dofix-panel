@@ -11,6 +11,7 @@ trait CustomerAddressTrait
     public function add_address($service_address, $user_id, $is_guest = 0)
     {
         $point = new Point($service_address->lat, $service_address->lon);
+        // dd("here");
         // $zone = Zone::whereContains('coordinates', $point)->ofStatus(1)->latest()->first();
         $zone = Zone::whereRaw("ST_Contains(coordinates, ST_GeomFromText(?))", [
             "POINT({$point->longitude} {$point->latitude})"

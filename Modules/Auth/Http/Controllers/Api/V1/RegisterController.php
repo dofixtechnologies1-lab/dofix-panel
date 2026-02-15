@@ -85,10 +85,10 @@ class RegisterController extends Controller
             }
         }
 
-        if($request->phone=="+919999999999" && $request->user_type == "customer"){
-            $otp = 1234;
-        }elseif($request->phone=="+919999900000" && $request->user_type == "provider-admin"){
-            $otp = 1234;
+        if($request->phone=="+918888888888" && $request->user_type == "customer"){
+            $otp = 4321;
+        }elseif($request->phone=="+918888888888" && $request->user_type == "provider-admin"){
+            $otp = 4321;
         }
         else{
             $otp = rand(1111, 9999);
@@ -415,8 +415,24 @@ class RegisterController extends Controller
         $owner->user_type = 'provider-admin';
         $owner->is_active = 0;
 
-        DB::transaction(function () use ($provider, $owner, $request) {
+        // DB::transaction(function () use ($provider, $owner, $request) {
+        //     $owner->save();
+        //     $provider->user_id = $owner->id;
+        //     $provider->save();
+        // });
+        
+        DB::transaction(function () use ($provider, $owner) {
+
             $owner->save();
+        
+            do {
+                $randomPartnerId = rand(1000, 9999);
+                $exists = DB::table('providers')
+                    ->where('dofix_partner_id', $randomPartnerId)
+                    ->exists();
+            } while ($exists);
+        
+            $provider->dofix_partner_id = "DF-".$randomPartnerId;
             $provider->user_id = $owner->id;
             $provider->save();
         });

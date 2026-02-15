@@ -36,6 +36,7 @@ use Modules\BusinessSettingsModule\Entities\BusinessSettings;
 use Modules\ServiceManagement\Entities\FavoriteService;
 use Modules\ServiceManagement\Entities\RecentView;
 use Modules\TransactionModule\Entities\Transaction;
+use Modules\CategoryManagement\Entities\CategoryExtra;
 
 class BookingController extends Controller
 {
@@ -1019,7 +1020,7 @@ class BookingController extends Controller
         $validator = Validator::make($request->all(), [
             'booking_id' => 'required|uuid|exists:bookings,id',
             'addons' => 'required|array|min:1',
-            'addons.*.service_id' => 'required|uuid|exists:services,id',
+            'addons.*.service_id' => 'required|uuid',
             'addons.*.variant_key' => 'required|string',
             'addons.*.service_name' => 'nullable|string|max:255',
             'addons.*.variation_id' => 'nullable|string',
@@ -1042,7 +1043,7 @@ class BookingController extends Controller
         DB::beginTransaction();
         try {
             $booking = Booking::where('id', $bookingId)->first();
-
+           
             if (!$booking) {
                 return response()->json([
                     'status' => false,
@@ -1055,6 +1056,7 @@ class BookingController extends Controller
                 ->where('is_addon', 1)
                 ->pluck('service_id')
                 ->toArray();
+                
 
             $newAddonIds = collect($request->addons)->pluck('service_id')->toArray();
 
@@ -1064,10 +1066,12 @@ class BookingController extends Controller
                 ->whereNotIn('service_id', $newAddonIds)
                 ->delete();
 
+
             // Step 5: Reset and recalculate total addon amount
             $oldAddonsTotal = BookingDetail::where('booking_id', $bookingId)
                 ->where('is_addon', 1)
                 ->sum('total_cost');
+           
 
             // Subtract old addons from booking total
             $booking->total_booking_amount -= $oldAddonsTotal;
@@ -1075,7 +1079,7 @@ class BookingController extends Controller
             // Step 6: Update or insert each addon
             $newAddonsTotal = 0;
             foreach ($request->addons as $addon) {
-                $service = Service::find($addon['service_id']);
+                $service = CategoryExtra::find($addon['service_id']);
                 $serviceName = $addon['service_name'] ?? $service?->name ?? 'Unnamed Service';
 
                 BookingDetail::updateOrCreate(

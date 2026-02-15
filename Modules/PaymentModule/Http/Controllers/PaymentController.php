@@ -77,8 +77,10 @@ class PaymentController extends Controller
                 'booking_id' => 'required|uuid',
             ]);
         }else {
+            // print_r($request->all());
+            // die;
             $validator = Validator::make($request->all(), [
-                'access_token' => '',
+                'access_token' => 'required',
                 'zone_id' => 'required|uuid',
                 // 'service_schedule' => 'required|date',
                 'service_address_id' => is_null($request['service_address']) ? 'required' : 'nullable',
@@ -98,6 +100,7 @@ class PaymentController extends Controller
             if ($validator_data->fails()) {
                 return redirect()->back()->withErrors($validator_data);
             }
+            
 
             $provider = Provider::where('id', $request['provider_id'])->first();
 
@@ -110,12 +113,17 @@ class PaymentController extends Controller
             }
 
         }else{
+            // print_r("else");
+            // die;
 
             if ($validator->fails()) {
                 if ($request->has('callback')) return redirect($request['callback'] . '?flag=fail');
                 else return response()->json(response_formatter(DEFAULT_400), 400);
             }
         }
+        
+        // print_r("here");
+        // die;
 
      
         
@@ -304,10 +312,11 @@ class PaymentController extends Controller
         // if (is_null($request['service_address_id'])) {
         //     $request['service_address_id'] = $this->add_address($service_address, null, $is_guest);
         // }
-
-      
-
+        
+        
         $request['service_address_id'] = $this->add_address(json_decode($service_address), null, $is_guest); 
+        
+        // dd($request['service_address_id']);
         
             
        
