@@ -146,6 +146,8 @@
                                         @canany(['provider_delete', 'provider_update'])
                                             <th>{{translate('Action')}}</th>
                                         @endcan
+                                        <th>Created Date</th>
+                                        <th>Updated Date</th>
                                     </tr>
                                     </thead>
                                     <tbody>
@@ -277,6 +279,8 @@
                                                     </div>
                                                 </td>
                                             @endcan
+                                            <td>{{ \Carbon\Carbon::parse($provider->created_at)->format('F d, Y h:i A') }}</td>
+                                            <td>{{ \Carbon\Carbon::parse($provider->updated_at)->format('F d, Y h:i A') }}</td>
                                         </tr>
                                     @endforeach
                                     </tbody>
