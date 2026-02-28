@@ -44,7 +44,10 @@ trait BookingTrait
     public function placeBookingRequest($userId, $request, $transactionId, $newUserInfo = null, int $isGuest = 0): array
     {
         $oldUserId = $userId;
+        // dd($oldUserId);
+        
         $cartData = Cart::where(['customer_id' => $userId])->get();
+        
 
         if ($cartData->count() == 0) {
             return ['flag' => 'failed', 'message' => 'no data found'];
@@ -89,9 +92,17 @@ trait BookingTrait
 
                 $cartData = $cartData->where('sub_category_id', $subCategory);
 
-                if ($request->has('payment_method') && $request['payment_method'] == 'cash_after_service') {
+                // if ($request->has('payment_method') && $request['payment_method'] == 'cash_after_service') {
+                //     $transactionId = 'cash-payment';
+                // } else if ($request->has('payment_method') && $request['payment_method'] == 'wallet_payment') {
+                //     $transactionId = 'wallet-payment';
+                // }
+                
+                $paymentMethod = $request['payment_method'] ?? null;
+
+                if ($paymentMethod === 'cash_after_service') {
                     $transactionId = 'cash-payment';
-                } else if ($request->has('payment_method') && $request['payment_method'] == 'wallet_payment') {
+                } elseif ($paymentMethod === 'wallet_payment') {
                     $transactionId = 'wallet-payment';
                 }
 
@@ -162,6 +173,9 @@ trait BookingTrait
                 $booking->total_campaign_discount_amount = $cartData->sum('campaign_discount');
                 $booking->total_coupon_discount_amount = $cartData->sum('coupon_discount');
                 $booking->coupon_code = $cartData->first()->coupon_code;
+                $booking->assign_customer_name = $request->assign_customer_name;
+                $booking->assign_customer_email = $request->assign_customer_email;
+                $booking->assign_customer_phone = $request->assign_customer_phone;
                 $booking->service_schedule = Carbon::parse($request['service_schedule']);
                 $booking->service_address_id = $request['service_address_id'] ?? '';
                 $booking->booking_otp = rand(100000, 999999);

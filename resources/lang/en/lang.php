@@ -5011,4 +5011,6 @@ _Message' => 'Customer notification for provider bid offer
   'The user type field is required.' => 'The user type field is required.',
   'The bank doc must not be greater than 10000 kilobytes.' => 'The bank doc must not be greater than 10000 kilobytes.',
   'registration_fee' => 'Registration fee',
+  'The passbook img failed to upload.' => 'The passbook img failed to upload.',
+  'cover image' => 'Cover image',
 );

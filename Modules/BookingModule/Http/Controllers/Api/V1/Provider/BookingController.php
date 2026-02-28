@@ -32,6 +32,7 @@ use Carbon\Carbon;
 use App\Models\Otp;
 use Modules\UserManagement\Entities\User;
 use Modules\ProviderManagement\Entities\Provider;
+use Log;
 
 class BookingController extends Controller
 {
@@ -200,6 +201,7 @@ class BookingController extends Controller
             }
             unset($booking->repeat);
         }
+        
 
         return response()->json(response_formatter(DEFAULT_200, [
             'bookings_count' => $bookings_count,
@@ -318,6 +320,8 @@ class BookingController extends Controller
             }
             unset($booking->repeat);
         }
+        
+      
 
         return response()->json(response_formatter(DEFAULT_200, [
             'bookings' => $bookings,
@@ -524,6 +528,7 @@ class BookingController extends Controller
         })->where(['id' => $id])->first();
 
         if (isset($booking)) {
+            Log::info("Booking", ["booking" => $booking]);
 
             return response()->json(response_formatter(DEFAULT_200, $booking), 200);
         }
@@ -781,8 +786,6 @@ class BookingController extends Controller
 
             $pre_work_image = null;
             if ($request['booking_status'] == 'ongoing') {
-
-
                 if ($request->has('pre_work_image')) {
                     foreach ($request->pre_work_image as $image) {
                         $extension = $image->getClientOriginalExtension(); // or $image->extension();

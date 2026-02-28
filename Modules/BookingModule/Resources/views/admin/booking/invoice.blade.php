@@ -327,8 +327,8 @@
                                     <td class="border-bottom text-center">{{$item->quantity}}</td>
                                     <td class="border-bottom text-right">{{with_currency_symbol($item->service_cost)}}</td> 
                                     <td class="border-bottom text-right">  
-                                        <p class="mb-1">Conn Fee: {{ with_currency_symbol($con_fee) }}</p>
-                                        <p class="mb-1">Agg Fee: {{ with_currency_symbol($agg_fee) }}</p>
+                                        <!--<p class="mb-1">Conn Fee: {{ with_currency_symbol($con_fee) }}</p>-->
+                                        <!--<p class="mb-1">Agg Fee: {{ with_currency_symbol($agg_fee) }}</p>-->
                                         <p class="mb-1"><strong>Total: {{ with_currency_symbol($item->total_cost) }}</strong></p> 
                                     </td>
                                 </tr>
@@ -351,7 +351,8 @@
                             </tr>
                             <tr>
                                 <td colspan="3"></td>
-                                <td>{{translate('Discount')}}</td>
+                                <!--<td>{{translate('Discount')}}</td>-->
+                                <td>Coupon Discount</td>
                                 <td>- {{with_currency_symbol($booking->total_discount_amount)}}</td>
                             </tr> 
                             @if ($booking->extra_fee > 0)
@@ -362,21 +363,34 @@
                                     <td>+ {{with_currency_symbol($booking->extra_fee)}}</td>
                                 </tr>
                             @endif
-                            <tr>
-                                <td colspan="3"></td>
-                                <td class="text-uppercase">Convenience Fee</td>
-                                <td class="text-uppercase">{{with_currency_symbol($con)}}</td>
-                            </tr>
-                            <tr>
-                                <td colspan="3"></td>
-                                <td class="text-uppercase">Aggregate Fee</td>
-                                <td class="text-uppercase">{{with_currency_symbol($agg)}}</td>
-                            </tr>
-                            <tr>
-                                <td colspan="3"></td>
-                                <td class="fw-700 border-top">{{translate('Total')}}</td>
-                                <td class="fw-700 border-top">{{with_currency_symbol($booking->total_booking_amount)}}</td>
-                            </tr>
+                            <!--<tr>-->
+                            <!--    <td colspan="3"></td>-->
+                            <!--    <td class="text-uppercase">Convenience Fee</td>-->
+                            <!--    <td class="text-uppercase">{{with_currency_symbol($con)}}</td>-->
+                            <!--</tr>-->
+                            <!--<tr>-->
+                            <!--    <td colspan="3"></td>-->
+                            <!--    <td class="text-uppercase">Aggregate Fee</td>-->
+                            <!--    <td class="text-uppercase">{{with_currency_symbol($agg)}}</td>-->
+                            <!--</tr>-->
+                            <!--<tr>-->
+                            <!--    <td colspan="3"></td>-->
+                            <!--    <td class="fw-700 border-top">{{translate('Total')}}</td>-->
+                            <!--    <td class="fw-700 border-top">{{with_currency_symbol($booking->total_booking_amount)}}</td>-->
+                            <!--</tr>-->
+                            @php($tax = $sub_total * 0.05)
+                            @php($grandTotal = $sub_total + $tax)
+                               <tr>
+    <td colspan="3"></td>
+    <td class="text-uppercase">Tax & Fee (5%)</td>
+    <td class="text-uppercase">{{ with_currency_symbol($tax) }}</td>
+</tr>
+<tr>
+    <td colspan="3"></td>
+    <td class="fw-700 border-top">{{ translate('Total') }}</td>
+    <td class="fw-700 border-top">{{ with_currency_symbol($grandTotal) }}</td>
+</tr>
+                         
                             @if ($booking->booking_partial_payments->isNotEmpty())
                                 @foreach($booking->booking_partial_payments as $partial)
                                     <tr>

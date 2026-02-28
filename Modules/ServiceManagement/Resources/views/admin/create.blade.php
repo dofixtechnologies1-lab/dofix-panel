@@ -351,6 +351,13 @@
                                                 </div>
                                             </div>
                                             
+                                            <div class="col-lg-4 col-md-6 form-floating mb-3">
+                                                <input type="file" class="form-control" name="var_image"
+                                                       accept=".{{ implode(',.', array_column(IMAGEEXTENSION, 'key')) }}, |image/*"
+                                                       id="var_image">
+                                                <label for="var_image">Upload Image</label>
+                                            </div>
+                                            
                                             <div class="col-lg-6 col-md-6 mb-3">
                                             <button type="button" class="btn btn--primary" id="service-ajax-variation">
                                                 <span class="material-icons">add</span>
@@ -634,34 +641,42 @@
             let discount = $('#discount-percent').val();
             let convenienceFee = $('#convenience-fee').val(); 
             let aggregatorFee = $('#aggregator-fee').val(); 
+            let file = $('#var_image')[0].files[0];
 
             if (name.length > 0 && price >= 0 && mrpPrice >= 0 && discount >= 0 && convenienceFee >= 0 && aggregatorFee >= 0 ) {
-                $.get({
+                let formData = new FormData();
+                formData.append('_token', '{{ csrf_token() }}'); // important for Laravel
+                formData.append('name', name);
+                formData.append('price', price);
+                formData.append('mrp_price', mrpPrice);
+                formData.append('discount_percent', discount);
+                formData.append('convenience_fee', convenienceFee);
+                formData.append('convenience_gst', $('#convenience-gst').val());
+                formData.append('aggregator_fee', aggregatorFee);
+                formData.append('aggregator_gst', $('#aggregator-gst').val());
+                formData.append('var_description', $('#var_description').val());
+                formData.append('var_duration', $('#var_duration').val());
+                formData.append('duration_hour', $('#duration_hour').val());
+                formData.append('duration_minute', $('#duration_minute').val());
+        
+                if(file) formData.append('var_image', file);
+        
+                $.ajax({
                     url: route,
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
                     dataType: 'json',
-                    data: {
-                        name: $('#variant-name').val(),
-                        price: $('#variant-price').val(),
-                        mrp_price: $('#mrp-price').val(),
-                        discount_percent: $('#discount-percent').val(),
-                        convenience_fee: $('#convenience-fee').val(),
-                        convenience_gst: $('#convenience-gst').val(),
-                        aggregator_fee: $('#aggregator-fee').val(),
-                        aggregator_gst: $('#aggregator-gst').val(), 
-                        var_description: $('#var_description').val(),
-                        var_duration: $('#var_duration').val(),
-                        duration_hour: $('#duration_hour').val(),
-                        duration_minute: $('#duration_minute').val(),
-                    },
-                    beforeSend: function () {
-                        /*$('#loading').show();*/
-                    },
+                    beforeSend: function () { /*$('#loading').show();*/ },
                     success: function (response) {
                         if (response.flag == 0) {
                             toastr.info('Already added');
                         } else {
                             $('#new-variations-table').show();
                             $('#' + id).html(response.template);
+        
+                            // reset fields
                             $('#variant-name').val("");
                             $('#variant-price').val(0);
                             $('#mrp-price').val(0);
@@ -674,12 +689,14 @@
                             $('#var_duration').val("");
                             $('#duration_hour').val("");
                             $('#duration_minute').val("");
+                            $('#var_image').val("");
                         }
                         variationCount++;
                     },
-                    complete: function () {
-                        /*$('#loading').hide();*/
-                    },
+                    complete: function () { /*$('#loading').hide();*/ },
+                    error: function(err) {
+                        toastr.error('Upload failed!');
+                    }
                 });
             } else {
                 toastr.warning('{{translate('fields_are_required')}}');
