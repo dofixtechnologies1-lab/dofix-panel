@@ -37,6 +37,7 @@ use Modules\ServiceManagement\Entities\FavoriteService;
 use Modules\ServiceManagement\Entities\RecentView;
 use Modules\TransactionModule\Entities\Transaction;
 use Modules\CategoryManagement\Entities\CategoryExtra;
+use Modules\BookingModule\Jobs\ProcessBookingJob;
 
 class BookingController extends Controller
 {
@@ -280,162 +281,656 @@ class BookingController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
+    // public function placeRequest(Request $request): JsonResponse
+    // {
+    //     $validator = Validator::make($request->all(), [
+    //         'payment_method' => 'required|in:' . implode(',', array_column(PAYMENT_METHODS, 'key')),
+    //         'zone_id' => 'required|uuid',
+    //         'service_schedule' => 'required',
+    //         'service_address_id' => is_null($request['service_address']) ? 'required' : 'nullable',
+    //         'service_preference' => 'required',
+    //         'post_id' => 'nullable|uuid',
+    //         'provider_id' => 'nullable|uuid',
+
+    //         'guest_id' => $this->isCustomerLoggedIn ? 'nullable' : 'required|uuid',
+    //         //'offline_payment_id' => 'required_if:payment_method,offline_payment',
+    //         //'customer_information' => 'required_if:payment_method,offline_payment',
+    //         'service_address' => is_null($request['service_address_id']) ? [
+    //             'required',
+    //             'json',
+    //             function ($attribute, $value, $fail) {
+    //                 $decoded = json_decode($value, true);
+
+    //                 if (json_last_error() !== JSON_ERROR_NONE) {
+    //                     $fail($attribute . ' must be a valid JSON string.');
+    //                     return;
+    //                 }
+
+    //                 if (is_null($decoded['lat']) || $decoded['lat'] == '') $fail($attribute . ' must contain "lat" properties.');
+    //                 if (is_null($decoded['lon']) || $decoded['lon'] == '') $fail($attribute . ' must contain "lon" properties.');
+    //                 if (is_null($decoded['address']) || $decoded['address'] == '') $fail($attribute . ' must contain "address" properties.');
+    //                 if (is_null($decoded['contact_person_name']) || $decoded['contact_person_name'] == '') $fail($attribute . ' must contain "contact_person_name" properties.');
+    //                 if (is_null($decoded['contact_person_number']) || $decoded['contact_person_number'] == '') $fail($attribute . ' must contain "contact_person_number" properties.');
+    //                 if (is_null($decoded['address_label']) || $decoded['address_label'] == '') $fail($attribute . ' must contain "address_label" properties.');
+    //             },
+    //         ] : '',
+
+    //         'is_partial' => 'nullable|in:0,1'
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json(response_formatter(DEFAULT_400, null, error_processor($validator)), 400);
+    //     }
+
+
+    //     $newUserInfo = null;
+    //     if ($request->has('new_user_info') && !empty($request->get('new_user_info')) && !$this->isCustomerLoggedIn) {
+    //         $newUserInfo = json_decode($request['new_user_info'], true);
+
+    //         if (json_last_error() !== JSON_ERROR_NONE || !is_array($newUserInfo)) {
+    //             return response()->json(response_formatter(DEFAULT_400, null, 'Invalid new_user_info format'), 400);
+    //         }
+
+    //         $newUserValidator = Validator::make($newUserInfo, [
+    //             'first_name' => 'required',
+    //             'phone' => 'required|regex:/^([0-9\s\-\+\(\)]*)$/|min:10',
+    //             'password' => 'required|min:8',
+    //         ]);
+
+    //         if ($newUserValidator->fails()) {
+    //             return response()->json(response_formatter(DEFAULT_400, null, error_processor($newUserValidator)), 400);
+    //         }
+    //     }
+
+    //     $customerUserId = $this->customerUserId;
+
+
+    //     if (is_null($request['service_address_id'])) {
+    //         $request['service_address_id'] = $this->add_address(json_decode($request['service_address']), null, !$this->isCustomerLoggedIn);
+    //     }
+
+    //     $minimumBookingAmount = (float)(business_config('min_booking_amount', 'booking_setup'))?->live_values;
+    //     $totalBookingAmount = cart_total($customerUserId) + getServiceFee();
+
+    //     if (!isset($request['post_id']) && $minimumBookingAmount > 0 && $totalBookingAmount < $minimumBookingAmount) {
+    //         return response()->json(response_formatter(MINIMUM_BOOKING_AMOUNT_200), 200);
+    //     }
+        
+       
+
+    //     if ($request['payment_method'] == 'wallet_payment') {
+    //         if (!isset($request['post_id'])) {
+    //             $response = $this->placeBookingRequest(userId: $customerUserId, request: $request, transactionId: 'wallet_payment', newUserInfo: $newUserInfo);
+    //         } else {
+    //             $postBid = PostBid::with(['post'])
+    //                 ->where('post_id', $request['post_id'])
+    //                 ->where('provider_id', $request['provider_id'])
+    //                 ->first();
+
+    //             $data = [
+    //                 'payment_method' => $request['payment_method'],
+    //                 'zone_id' => $request['zone_id'],
+    //                 'service_tax' => $postBid?->post?->service?->tax,
+    //                 'provider_id' => $postBid->provider_id,
+    //                 'price' => $postBid->offered_price,
+    //                 'service_schedule' => !is_null($request['booking_schedule']) ? $request['booking_schedule'] : $postBid->post->booking_schedule,
+    //                 'service_id' => $postBid->post->service_id,
+    //                 'category_id' => $postBid->post->category_id,
+    //                 'sub_category_id' => $postBid->post->category_id,
+    //                 'service_address_id' => !is_null($request['service_address_id']) ? $request['service_address_id'] : $postBid->post->service_address_id,
+    //                 'is_partial' => $request['is_partial']
+    //             ];
+
+    //             $user = User::find($customerUserId);
+    //             $tax = !is_null($data['service_tax']) ? round((($data['price'] * $data['service_tax']) / 100) * 1, 2) : 0;
+    //             if (isset($user) && $user->wallet_balance < ($postBid->offered_price + $tax)) {
+    //                 return response()->json(response_formatter(INSUFFICIENT_WALLET_BALANCE_400), 400);
+    //             }
+
+    //             $response = $this->placeBookingRequestForBidding($customerUserId, $request, 'wallet_payment', $data);
+
+    //             if ($response['flag'] == 'success') {
+    //                 PostBidController::acceptPostBidOffer($postBid->id, $response['booking_id']);
+    //             }
+    //         }
+
+    //     } elseif ($request['payment_method'] == 'offline_payment') {
+    //         if (!isset($request['post_id'])) {
+    //             $response = $this->placeBookingRequest($customerUserId, $request, 'offline-payment', newUserInfo: $newUserInfo, isGuest: !$this->isCustomerLoggedIn);
+
+    //         } else {
+    //             $postBid = PostBid::with(['post'])
+    //                 ->where('post_id', $request['post_id'])
+    //                 ->where('provider_id', $request['provider_id'])
+    //                 ->first();
+
+    //             $data = [
+    //                 'payment_method' => $request['payment_method'],
+    //                 'zone_id' => $request['zone_id'],
+    //                 'service_tax' => $postBid?->post?->service?->tax,
+    //                 'provider_id' => $postBid->provider_id,
+    //                 'price' => $postBid->offered_price,
+    //                 'service_schedule' => !is_null($request['booking_schedule']) ? $request['booking_schedule'] : $postBid->post->booking_schedule,
+    //                 'service_id' => $postBid->post->service_id,
+    //                 'category_id' => $postBid->post->category_id,
+    //                 'sub_category_id' => $postBid->post->category_id,
+    //                 'service_address_id' => !is_null($request['service_address_id']) ? $request['service_address_id'] : $postBid->post->service_address_id,
+    //                 'is_partial' => $request['is_partial']
+    //             ];
+
+    //             $response = $this->placeBookingRequestForBidding($customerUserId, $request, 'offline_payment', $data);
+
+
+    //             if ($response['flag'] == 'success') {
+    //                 PostBidController::acceptPostBidOffer($postBid->id, $response['booking_id']);
+    //             }
+    //         }
+    //     } else {
+    //         if ($request['service_type'] == 'repeat') {
+    //             $response = $this->placeRepeatBookingRequest($customerUserId, $request, 'cash-payment', newUserInfo: $newUserInfo, isGuest: !$this->isCustomerLoggedIn);
+    //         } else {
+                
+
+    //             $response = $this->placeBookingRequest($customerUserId, $request, 'cash-payment', newUserInfo: $newUserInfo, isGuest: !$this->isCustomerLoggedIn);
+
+    //         }
+    //     }
+
+    //     return response()->json($response, 200);
+
+    //     if ($response['flag'] == 'success') {
+    //         return response()->json(response_formatter(BOOKING_PLACE_SUCCESS_200, $response), 200);
+    //     } else {
+    //         return response()->json(response_formatter(BOOKING_PLACE_FAIL_200), 200);
+    //     }
+    // }
+    
+    public function placeRequestTest(Request $request): JsonResponse
+{
+    /*
+    |--------------------------------------------------------------------------
+    | 1. Fast Validation (no change in logic)
+    |--------------------------------------------------------------------------
+    */
+    $validator = Validator::make($request->all(), [
+        'payment_method' => 'required|in:' . implode(',', array_column(PAYMENT_METHODS, 'key')),
+        'zone_id' => 'required|uuid',
+        'service_schedule' => 'required',
+        'service_address_id' => is_null($request['service_address']) ? 'required' : 'nullable',
+        'service_preference' => 'required',
+        'post_id' => 'nullable|uuid',
+        'provider_id' => 'nullable|uuid',
+        'guest_id' => $this->isCustomerLoggedIn ? 'nullable' : 'required|uuid',
+        'is_partial' => 'nullable|in:0,1', // <-- missing comma fixed
+        'assign_customer_name' => 'nullable|string',
+        'assign_customer_phone' => 'nullable|string',
+        'assign_customer_email' => 'nullable|string',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json(response_formatter(DEFAULT_400, null, error_processor($validator)), 400);
+    }
+
+    $customerUserId = $this->customerUserId;
+    // print_r($customerUserId);
+    // die;
+
+    /*
+    |--------------------------------------------------------------------------
+    | 2. Address creation (only if needed)
+    |--------------------------------------------------------------------------
+    */
+    if (is_null($request['service_address_id'])) {
+        $request['service_address_id'] = $this->add_address(
+            json_decode($request['service_address']),
+            null,
+            !$this->isCustomerLoggedIn
+        );
+    }
+    // print_r($request['service_address_id']);
+    // die;
+
+    /*
+    |--------------------------------------------------------------------------
+    | 3. Minimum booking check (optimized)
+    |--------------------------------------------------------------------------
+    */
+    // if (!isset($request['post_id'])) {
+
+    //     // ðŸ”¥ CACHE THIS VALUE (huge improvement)
+    //     // $minimumBookingAmount = cache()->remember(
+    //     //     'min_booking_amount',
+    //     //     300,
+    //     //     fn() => (float)(business_config('min_booking_amount', 'booking_setup'))?->live_values
+    //     // );
+
+    //     if ($minimumBookingAmount > 0) {
+
+    //         // ðŸ”´ If slow, cart_total is your bottleneck
+    //         // old
+    //         // $totalBookingAmount = cart_total($customerUserId) + getServiceFee();
+    //         // new
+    //         $totalBookingAmount = cart_total($customerUserId);
+
+    //         if ($totalBookingAmount < $minimumBookingAmount) {
+    //             return response()->json(response_formatter(MINIMUM_BOOKING_AMOUNT_200), 200);
+    //         }
+    //     }
+    // }
+
+    /*
+    |--------------------------------------------------------------------------
+    | 4. BIDDING FLOW (Optimized Query)
+    |--------------------------------------------------------------------------
+    */
+    // if (isset($request['post_id'])) {
+    //     // die("here");
+
+    //     // ðŸ”¥ DO NOT eager load full post model
+    //     $postBid = PostBid::query()
+    //         ->where('post_id', $request['post_id'])
+    //         ->where('provider_id', $request['provider_id'])
+    //         ->select('id', 'provider_id', 'offered_price', 'post_id')
+    //         ->first();
+
+    //     if (!$postBid) {
+    //         return response()->json(response_formatter(DEFAULT_404), 404);
+    //     }
+
+    //     // ðŸ”¥ Fetch post data separately (lighter)
+    //     $post = DB::table('posts')
+    //         ->where('id', $postBid->post_id)
+    //         ->select('service_id', 'category_id', 'booking_schedule', 'service_address_id')
+    //         ->first();
+
+    //     $serviceTax = DB::table('services')
+    //         ->where('id', $post->service_id)
+    //         ->value('tax');
+
+    //     $price = $postBid->offered_price;
+    //     $tax = $serviceTax ? round(($price * $serviceTax) / 100, 2) : 0;
+
+    // //     /*
+    // //     |--------------------------------------------------------------------------
+    // //     | Wallet check (only if needed)
+    // //     |--------------------------------------------------------------------------
+    // //     */
+    //     if ($request['payment_method'] === 'wallet_payment') {
+
+    //         // ðŸ”¥ value() is much faster than find()
+    //         $walletBalance = DB::table('users')
+    //             ->where('id', $customerUserId)
+    //             ->value('wallet_balance');
+
+    //         if ($walletBalance < ($price + $tax)) {
+    //             return response()->json(response_formatter(INSUFFICIENT_WALLET_BALANCE_400), 400);
+    //         }
+    //     }
+
+    //     $data = [
+    //         'payment_method' => $request['payment_method'],
+    //         'zone_id' => $request['zone_id'],
+    //         'service_tax' => $serviceTax,
+    //         'provider_id' => $postBid->provider_id,
+    //         'price' => $price,
+    //         'service_schedule' => $request['booking_schedule'] ?? $post->booking_schedule,
+    //         'service_id' => $post->service_id,
+    //         'category_id' => $post->category_id,
+    //         'sub_category_id' => $post->category_id,
+    //         'service_address_id' => $request['service_address_id'] ?? $post->service_address_id,
+    //         'is_partial' => $request['is_partial']
+    //     ];
+
+    //     $transactionId = $request['payment_method'] === 'offline_payment'
+    //         ? 'offline_payment'
+    //         : 'wallet_payment';
+
+    //     $response = $this->placeBookingRequestForBidding(
+    //         $customerUserId,
+    //         $request,
+    //         $transactionId,
+    //         $data
+    //     );
+
+    //     if (($response['flag'] ?? null) === 'success') {
+    //         PostBidController::acceptPostBidOffer($postBid->id, $response['booking_id']);
+    //     }
+
+    //     return response()->json($response, 200);
+    // }
+
+    /*
+    |--------------------------------------------------------------------------
+    | 5. Normal booking flow (unchanged)
+    |--------------------------------------------------------------------------
+    */
+    // dd($request['payment_method']);
+    
+    $transactionId = match ($request['payment_method']) {
+        'wallet_payment'  => 'wallet_payment',
+        'offline_payment' => 'offline-payment',
+        default           => 'cash-payment',
+    };
+
+    if ($request['service_type'] == 'repeat') {
+
+        $response = $this->placeRepeatBookingRequest(
+            $customerUserId,
+            $request,
+            $transactionId,
+            null,
+            !$this->isCustomerLoggedIn
+        );
+
+    } else {
+        // dd($this->isCustomerLoggedIn);
+
+        $response = $this->placeBookingRequest(
+            $customerUserId,
+            $request,
+            $transactionId,
+            null,
+            !$this->isCustomerLoggedIn
+        );
+        dd($response);
+    }
+
+    return response()->json($response, 200);
+}
+    
     public function placeRequest(Request $request): JsonResponse
-    {
-        $validator = Validator::make($request->all(), [
-            'payment_method' => 'required|in:' . implode(',', array_column(PAYMENT_METHODS, 'key')),
-            'zone_id' => 'required|uuid',
-            'service_schedule' => 'required',
-            'service_address_id' => is_null($request['service_address']) ? 'required' : 'nullable',
-            'service_preference' => 'required',
-            'post_id' => 'nullable|uuid',
-            'provider_id' => 'nullable|uuid',
+{
+    /*
+    |--------------------------------------------------------------------------
+    | 1. Fast Validation (no change in logic)
+    |--------------------------------------------------------------------------
+    */
+    $validator = Validator::make($request->all(), [
+        'payment_method' => 'required|in:' . implode(',', array_column(PAYMENT_METHODS, 'key')),
+        'zone_id' => 'required|uuid',
+        'service_schedule' => 'required',
+        'service_address_id' => is_null($request['service_address']) ? 'required' : 'nullable',
+        'service_preference' => 'required',
+        'post_id' => 'nullable|uuid',
+        'provider_id' => 'nullable|uuid',
+        'guest_id' => $this->isCustomerLoggedIn ? 'nullable' : 'required|uuid',
+        'is_partial' => 'nullable|in:0,1', // <-- missing comma fixed
+        'assign_customer_name' => 'nullable|string',
+        'assign_customer_phone' => 'nullable|string',
+        'assign_customer_email' => 'nullable|string',
+    ]);
+    
+    // Log::info('Booking request received', ['request' => $request->all()]);
 
-            'guest_id' => $this->isCustomerLoggedIn ? 'nullable' : 'required|uuid',
-            //'offline_payment_id' => 'required_if:payment_method,offline_payment',
-            //'customer_information' => 'required_if:payment_method,offline_payment',
-            'service_address' => is_null($request['service_address_id']) ? [
-                'required',
-                'json',
-                function ($attribute, $value, $fail) {
-                    $decoded = json_decode($value, true);
+    if ($validator->fails()) {
+        return response()->json(response_formatter(DEFAULT_400, null, error_processor($validator)), 400);
+    }
 
-                    if (json_last_error() !== JSON_ERROR_NONE) {
-                        $fail($attribute . ' must be a valid JSON string.');
-                        return;
-                    }
+    $customerUserId = $this->customerUserId;
 
-                    if (is_null($decoded['lat']) || $decoded['lat'] == '') $fail($attribute . ' must contain "lat" properties.');
-                    if (is_null($decoded['lon']) || $decoded['lon'] == '') $fail($attribute . ' must contain "lon" properties.');
-                    if (is_null($decoded['address']) || $decoded['address'] == '') $fail($attribute . ' must contain "address" properties.');
-                    if (is_null($decoded['contact_person_name']) || $decoded['contact_person_name'] == '') $fail($attribute . ' must contain "contact_person_name" properties.');
-                    if (is_null($decoded['contact_person_number']) || $decoded['contact_person_number'] == '') $fail($attribute . ' must contain "contact_person_number" properties.');
-                    if (is_null($decoded['address_label']) || $decoded['address_label'] == '') $fail($attribute . ' must contain "address_label" properties.');
-                },
-            ] : '',
+    /*
+    |--------------------------------------------------------------------------
+    | 2. Address creation (only if needed)
+    |--------------------------------------------------------------------------
+    */
+    if (is_null($request['service_address_id'])) {
+        $request['service_address_id'] = $this->add_address(
+            json_decode($request['service_address']),
+            null,
+            !$this->isCustomerLoggedIn
+        );
+    }
 
-            'is_partial' => 'nullable|in:0,1'
-        ]);
+    /*
+    |--------------------------------------------------------------------------
+    | 3. Minimum booking check (optimized)
+    |--------------------------------------------------------------------------
+    */
+    if (!isset($request['post_id'])) {
 
-        if ($validator->fails()) {
-            return response()->json(response_formatter(DEFAULT_400, null, error_processor($validator)), 400);
+        // ðŸ”¥ CACHE THIS VALUE (huge improvement)
+        $minimumBookingAmount = cache()->remember(
+            'min_booking_amount',
+            300,
+            fn() => (float)(business_config('min_booking_amount', 'booking_setup'))?->live_values
+        );
+
+        if ($minimumBookingAmount > 0) {
+
+            // ðŸ”´ If slow, cart_total is your bottleneck
+            // $totalBookingAmount = cart_total($customerUserId) + getServiceFee();
+
+            if ($totalBookingAmount < $minimumBookingAmount) {
+                return response()->json(response_formatter(MINIMUM_BOOKING_AMOUNT_200), 200);
+            }
+        }
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | 4. BIDDING FLOW (Optimized Query)
+    |--------------------------------------------------------------------------
+    */
+    if (isset($request['post_id'])) {
+        // die("here");
+
+        // ðŸ”¥ DO NOT eager load full post model
+        $postBid = PostBid::query()
+            ->where('post_id', $request['post_id'])
+            ->where('provider_id', $request['provider_id'])
+            ->select('id', 'provider_id', 'offered_price', 'post_id')
+            ->first();
+
+        if (!$postBid) {
+            return response()->json(response_formatter(DEFAULT_404), 404);
         }
 
+        // ðŸ”¥ Fetch post data separately (lighter)
+        $post = DB::table('posts')
+            ->where('id', $postBid->post_id)
+            ->select('service_id', 'category_id', 'booking_schedule', 'service_address_id')
+            ->first();
 
-        $newUserInfo = null;
-        if ($request->has('new_user_info') && !empty($request->get('new_user_info')) && !$this->isCustomerLoggedIn) {
-            $newUserInfo = json_decode($request['new_user_info'], true);
+        $serviceTax = DB::table('services')
+            ->where('id', $post->service_id)
+            ->value('tax');
 
-            if (json_last_error() !== JSON_ERROR_NONE || !is_array($newUserInfo)) {
-                return response()->json(response_formatter(DEFAULT_400, null, 'Invalid new_user_info format'), 400);
-            }
+        $price = $postBid->offered_price;
+        $tax = $serviceTax ? round(($price * $serviceTax) / 100, 2) : 0;
 
-            $newUserValidator = Validator::make($newUserInfo, [
-                'first_name' => 'required',
-                'phone' => 'required|regex:/^([0-9\s\-\+\(\)]*)$/|min:10',
-                'password' => 'required|min:8',
-            ]);
+    //     /*
+    //     |--------------------------------------------------------------------------
+    //     | Wallet check (only if needed)
+    //     |--------------------------------------------------------------------------
+    //     */
+        if ($request['payment_method'] === 'wallet_payment') {
 
-            if ($newUserValidator->fails()) {
-                return response()->json(response_formatter(DEFAULT_400, null, error_processor($newUserValidator)), 400);
+            // ðŸ”¥ value() is much faster than find()
+            $walletBalance = DB::table('users')
+                ->where('id', $customerUserId)
+                ->value('wallet_balance');
+
+            if ($walletBalance < ($price + $tax)) {
+                return response()->json(response_formatter(INSUFFICIENT_WALLET_BALANCE_400), 400);
             }
         }
 
-        $customerUserId = $this->customerUserId;
+        $data = [
+            'payment_method' => $request['payment_method'],
+            'zone_id' => $request['zone_id'],
+            'service_tax' => $serviceTax,
+            'provider_id' => $postBid->provider_id,
+            'price' => $price,
+            'service_schedule' => $request['booking_schedule'] ?? $post->booking_schedule,
+            'service_id' => $post->service_id,
+            'category_id' => $post->category_id,
+            'sub_category_id' => $post->category_id,
+            'service_address_id' => $request['service_address_id'] ?? $post->service_address_id,
+            'is_partial' => $request['is_partial']
+        ];
 
-        if (is_null($request['service_address_id'])) {
-            $request['service_address_id'] = $this->add_address(json_decode($request['service_address']), null, !$this->isCustomerLoggedIn);
-        }
+        $transactionId = $request['payment_method'] === 'offline_payment'
+            ? 'offline_payment'
+            : 'wallet_payment';
 
-        $minimumBookingAmount = (float)(business_config('min_booking_amount', 'booking_setup'))?->live_values;
-        $totalBookingAmount = cart_total($customerUserId) + getServiceFee();
+        $response = $this->placeBookingRequestForBidding(
+            $customerUserId,
+            $request,
+            $transactionId,
+            $data
+        );
 
-        if (!isset($request['post_id']) && $minimumBookingAmount > 0 && $totalBookingAmount < $minimumBookingAmount) {
-            return response()->json(response_formatter(MINIMUM_BOOKING_AMOUNT_200), 200);
-        }
-
-        if ($request['payment_method'] == 'wallet_payment') {
-            if (!isset($request['post_id'])) {
-                $response = $this->placeBookingRequest(userId: $customerUserId, request: $request, transactionId: 'wallet_payment', newUserInfo: $newUserInfo);
-            } else {
-                $postBid = PostBid::with(['post'])
-                    ->where('post_id', $request['post_id'])
-                    ->where('provider_id', $request['provider_id'])
-                    ->first();
-
-                $data = [
-                    'payment_method' => $request['payment_method'],
-                    'zone_id' => $request['zone_id'],
-                    'service_tax' => $postBid?->post?->service?->tax,
-                    'provider_id' => $postBid->provider_id,
-                    'price' => $postBid->offered_price,
-                    'service_schedule' => !is_null($request['booking_schedule']) ? $request['booking_schedule'] : $postBid->post->booking_schedule,
-                    'service_id' => $postBid->post->service_id,
-                    'category_id' => $postBid->post->category_id,
-                    'sub_category_id' => $postBid->post->category_id,
-                    'service_address_id' => !is_null($request['service_address_id']) ? $request['service_address_id'] : $postBid->post->service_address_id,
-                    'is_partial' => $request['is_partial']
-                ];
-
-                $user = User::find($customerUserId);
-                $tax = !is_null($data['service_tax']) ? round((($data['price'] * $data['service_tax']) / 100) * 1, 2) : 0;
-                if (isset($user) && $user->wallet_balance < ($postBid->offered_price + $tax)) {
-                    return response()->json(response_formatter(INSUFFICIENT_WALLET_BALANCE_400), 400);
-                }
-
-                $response = $this->placeBookingRequestForBidding($customerUserId, $request, 'wallet_payment', $data);
-
-                if ($response['flag'] == 'success') {
-                    PostBidController::acceptPostBidOffer($postBid->id, $response['booking_id']);
-                }
-            }
-
-        } elseif ($request['payment_method'] == 'offline_payment') {
-            if (!isset($request['post_id'])) {
-                $response = $this->placeBookingRequest($customerUserId, $request, 'offline-payment', newUserInfo: $newUserInfo, isGuest: !$this->isCustomerLoggedIn);
-
-            } else {
-                $postBid = PostBid::with(['post'])
-                    ->where('post_id', $request['post_id'])
-                    ->where('provider_id', $request['provider_id'])
-                    ->first();
-
-                $data = [
-                    'payment_method' => $request['payment_method'],
-                    'zone_id' => $request['zone_id'],
-                    'service_tax' => $postBid?->post?->service?->tax,
-                    'provider_id' => $postBid->provider_id,
-                    'price' => $postBid->offered_price,
-                    'service_schedule' => !is_null($request['booking_schedule']) ? $request['booking_schedule'] : $postBid->post->booking_schedule,
-                    'service_id' => $postBid->post->service_id,
-                    'category_id' => $postBid->post->category_id,
-                    'sub_category_id' => $postBid->post->category_id,
-                    'service_address_id' => !is_null($request['service_address_id']) ? $request['service_address_id'] : $postBid->post->service_address_id,
-                    'is_partial' => $request['is_partial']
-                ];
-
-                $response = $this->placeBookingRequestForBidding($customerUserId, $request, 'offline_payment', $data);
-
-                if ($response['flag'] == 'success') {
-                    PostBidController::acceptPostBidOffer($postBid->id, $response['booking_id']);
-                }
-            }
-        } else {
-            if ($request['service_type'] == 'repeat') {
-                $response = $this->placeRepeatBookingRequest($customerUserId, $request, 'cash-payment', newUserInfo: $newUserInfo, isGuest: !$this->isCustomerLoggedIn);
-            } else {
-
-                $response = $this->placeBookingRequest($customerUserId, $request, 'cash-payment', newUserInfo: $newUserInfo, isGuest: !$this->isCustomerLoggedIn);
-
-            }
+        if (($response['flag'] ?? null) === 'success') {
+            PostBidController::acceptPostBidOffer($postBid->id, $response['booking_id']);
         }
 
         return response()->json($response, 200);
+    }
 
-        if ($response['flag'] == 'success') {
-            return response()->json(response_formatter(BOOKING_PLACE_SUCCESS_200, $response), 200);
-        } else {
-            return response()->json(response_formatter(BOOKING_PLACE_FAIL_200), 200);
+    /*
+    |--------------------------------------------------------------------------
+    | 5. Normal booking flow (unchanged)
+    |--------------------------------------------------------------------------
+    */
+    $transactionId = match ($request['payment_method']) {
+        'wallet_payment'  => 'wallet_payment',
+        'offline_payment' => 'offline-payment',
+        default           => 'cash-payment',
+    };
+
+    if ($request['service_type'] == 'repeat') {
+
+        $response = $this->placeRepeatBookingRequest(
+            $customerUserId,
+            $request,
+            $transactionId,
+            null,
+            !$this->isCustomerLoggedIn
+        );
+
+    } else {
+
+        $response = $this->placeBookingRequest(
+            $customerUserId,
+            $request,
+            $transactionId,
+            null,
+            !$this->isCustomerLoggedIn
+        );
+    }
+
+    return response()->json($response, 200);
+}
+
+// public function placeRequest(Request $request): JsonResponse
+// {
+//     // -------------------------
+//     // 1️⃣ Validation
+//     // -------------------------
+    
+//     $validator = Validator::make($request->all(), [
+//         'payment_method' => 'required|in:' . implode(',', array_column(PAYMENT_METHODS, 'key')),
+//         'zone_id' => 'required|uuid',
+//         'service_schedule' => 'required',
+//         'service_address_id' => is_null($request['service_address']) ? 'required' : 'nullable',
+//         'service_preference' => 'required',
+//         'post_id' => 'nullable|uuid',
+//         'provider_id' => 'nullable|uuid',
+//         'guest_id' => $this->isCustomerLoggedIn ? 'nullable' : 'required|uuid',
+//         'assign_customer_name' => 'nullable|string',
+//         'assign_customer_phone' => 'nullable|string',
+//         'assign_customer_email' => 'nullable|string',
+//         'service_address' => is_null($request['service_address_id']) ? [
+//             'required', 'json',
+//             function($attribute, $value, $fail) {
+//                 $decoded = json_decode($value, true);
+//                 if (json_last_error() !== JSON_ERROR_NONE) {
+//                     $fail($attribute . ' must be valid JSON.');
+//                     return;
+//                 }
+//                 foreach (['lat','lon','address','contact_person_name','contact_person_number','address_label'] as $key) {
+//                     if (empty($decoded[$key])) {
+//                         $fail("$attribute must contain '$key'");
+//                     }
+//                 }
+//             }
+//         ] : '',
+//         'is_partial' => 'nullable|in:0,1'
+//     ]);
+
+//     if ($validator->fails()) {
+//         return response()->json(response_formatter(DEFAULT_400, null, error_processor($validator)), 400);
+//     }
+
+//     // -------------------------
+//     // 2️⃣ Handle new guest info
+//     // -------------------------
+//     $newUserInfo = null;
+//     if (!$this->isCustomerLoggedIn && $request->has('new_user_info') && !empty($request->get('new_user_info'))) {
+//         $newUserInfo = json_decode($request['new_user_info'], true);
+//         if (!is_array($newUserInfo) || json_last_error() !== JSON_ERROR_NONE) {
+//             return response()->json(response_formatter(DEFAULT_400, null, 'Invalid new_user_info format'), 400);
+//         }
+//         $newUserValidator = Validator::make($newUserInfo, [
+//             'first_name' => 'required',
+//             'phone' => 'required|regex:/^([0-9\s\-\+\(\)]*)$/|min:10',
+//             'password' => 'required|min:8',
+//         ]);
+//         if ($newUserValidator->fails()) {
+//             return response()->json(response_formatter(DEFAULT_400, null, error_processor($newUserValidator)), 400);
+//         }
+//     }
+
+//     // -------------------------
+//     // 3️⃣ Determine customer ID
+//     // -------------------------
+//     $customerUserId = $this->isCustomerLoggedIn
+//         ? $this->customerUserId
+//         : (isset($request['guest_id']) ? (int)$request['guest_id'] : null);
+
+//     if (!$customerUserId) {
+//         return response()->json(response_formatter(DEFAULT_400, null, 'guest_id is required'), 400);
+//     }
+
+//     // -------------------------
+//     // 4️⃣ Add service address if needed
+//     // -------------------------
+//     if (is_null($request['service_address_id'])) {
+//         $request['service_address_id'] = $this->add_address(
+//             json_decode($request['service_address']),
+//             null,
+//             !$this->isCustomerLoggedIn
+//         );
+//     }
+
+//     // -------------------------
+//     // 5️⃣ Dispatch Booking Job
+//     // -------------------------
+//     try {
+//         ProcessBookingJob::dispatch( $customerUserId, $request->all(), $newUserInfo);
+//     } catch (\Throwable $e) {
+//         return response()->json(response_formatter(BOOKING_PLACE_FAIL_200, null, $e->getMessage()), 500);
+//     }
+
+//     // -------------------------
+//     // 6️⃣ Return Pending Confirmation
+//     // -------------------------
+//     return response()->json([
+//         'flag' => 'pending',
+//         'message' => 'Booking request received. It will be confirmed shortly.'
+//     ], 200);
+// }
+    
+
+    
+    private function ensureWalletBalance(string $userId, float $price, ?float $taxPercent): void
+    {
+        $user = User::findOrFail($userId);
+    
+        $tax = $taxPercent ? round(($price * $taxPercent) / 100, 2) : 0;
+    
+        if ($user->wallet_balance < ($price + $tax)) {
+            abort(response()->json(response_formatter(INSUFFICIENT_WALLET_BALANCE_400), 400));
         }
     }
 

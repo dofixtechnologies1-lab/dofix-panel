@@ -17,7 +17,7 @@ class Variation extends Model
         'price' => 'float',
     ];
 
-    protected $fillable = ['variant', 'variant_key', 'zone_id', 'price', 'service_id','mrp_price','discount','convenience_fee','convenience_gst','aggregator_fee','aggregator_gst','var_description','var_duration', 'duration_hour', 'duration_minute'];
+    protected $fillable = ['variant', 'variant_key', 'zone_id', 'price', 'service_id','mrp_price','discount','convenience_fee','convenience_gst','aggregator_fee','aggregator_gst','var_description','var_duration', 'duration_hour', 'duration_minute', 'cover_image'];
 
     public function zone(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {

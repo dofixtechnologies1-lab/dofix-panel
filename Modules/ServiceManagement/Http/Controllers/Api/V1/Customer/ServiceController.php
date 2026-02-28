@@ -1044,69 +1044,142 @@ class ServiceController extends Controller
     //     }
     // }
 
+    // public function servicesBySubcategory(Request $request)
+    // {
+    //     // dd("hgchgc");
+    //     $validator = Validator::make($request->all(), [
+    //         'limit' => 'required|numeric|min:1|max:200',
+    //         'offset' => 'required|numeric|min:1|max:100000',
+    //         'sub_category_id' => 'required',
+    //     ]);
+    //     if ($validator->fails()) {
+    //         return response()->json(response_formatter(DEFAULT_400, null, error_processor($validator)), 400);
+    //     }
+    //     try {
+    //         $zoneId = $request->header('zoneID');
+    //         $sub_category_id = $request->sub_category_id;
+    //         $servicesQuery = $this->service
+    //           ->with([
+    //               'category.zonesBasicInfo',
+    //               'category.extras',
+    //               'variations' => function ($q) use ($zoneId) {
+    //                   $q->where('zone_id', $zoneId);
+    //               },
+    //               'service_discount',
+    //               'category.category_discount'
+    //           ])
+    //           ->where('sub_category_id', $sub_category_id)
+    //           ->where('is_active', 1)
+    //           ->where(function ($query) {
+    //               $query->whereDoesntHave('service_discount')
+    //                   ->orWhereHas('service_discount')
+    //                   ->orWhere(function ($query) {
+    //                       $query->whereDoesntHave('category.category_discount')
+    //                           ->orWhereHas('category.category_discount');
+    //                   });
+    //           })
+    //           ->orderBy('created_at', 'asce');
+              
+
+    //         $services = $servicesQuery
+    //             ->paginate($request['limit'], ['*'], 'offset', $request['offset'])
+    //             ->withPath('');
+
+    //         foreach ($services as $service) {
+    //             $service['is_favorite'] = $this->favoriteService
+    //                 ->where('customer_user_id', $this->customer_user_id)
+    //                 ->where('service_id', $service->id)
+    //                 ->exists() ? 1 : 0;
+    //             $service['extras'] = $service->category->extras ?? [];
+    //         }
+
+    //         if (count($services) > 0) {
+    //             $authUser = auth('api')->user();
+    //             if ($authUser) {
+    //                 $recentView = $this->recentView->firstOrNew(['sub_category_id' => $sub_category_id, 'user_id' => $authUser->id]);
+    //                 $recentView->total_sub_category_view += 1;
+    //                 $recentView->save();
+    //             }
+    //             return response()->json(response_formatter(DEFAULT_200, self::variationMapper($services, $request)), 200);
+    //         }
+
+    //         return response()->json(response_formatter(DEFAULT_204), 200);
+    //     } catch (\Exception $e) {
+    //         return $e->getMessage() . '_' . $e->getLine();
+    //     }
+    // }
+    
     public function servicesBySubcategory(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'limit' => 'required|numeric|min:1|max:200',
-            'offset' => 'required|numeric|min:1|max:100000',
-            'sub_category_id' => 'required',
-        ]);
-        if ($validator->fails()) {
-            return response()->json(response_formatter(DEFAULT_400, null, error_processor($validator)), 400);
-        }
-        try {
-            $zoneId = $request->header('zoneID');
-            $sub_category_id = $request->sub_category_id;
-            $servicesQuery = $this->service
-              ->with([
-                  'category.zonesBasicInfo',
-                  'category.extras',
-                  'variations' => function ($q) use ($zoneId) {
-                      $q->where('zone_id', $zoneId);
-                  },
-                  'service_discount',
-                  'category.category_discount'
-              ])
-              ->where('sub_category_id', $sub_category_id)
-              ->where('is_active', 1)
-              ->where(function ($query) {
-                  $query->whereDoesntHave('service_discount')
-                      ->orWhereHas('service_discount')
-                      ->orWhere(function ($query) {
-                          $query->whereDoesntHave('category.category_discount')
-                              ->orWhereHas('category.category_discount');
-                      });
-              })
-              ->latest();
+{
+    $validator = Validator::make($request->all(), [
+        'limit' => 'required|numeric|min:1|max:200',
+        'offset' => 'required|numeric|min:1|max:100000',
+        'sub_category_id' => 'required',
+    ]);
 
-
-            $services = $servicesQuery
-                ->paginate($request['limit'], ['*'], 'offset', $request['offset'])
-                ->withPath('');
-
-            foreach ($services as $service) {
-                $service['is_favorite'] = $this->favoriteService
-                    ->where('customer_user_id', $this->customer_user_id)
-                    ->where('service_id', $service->id)
-                    ->exists() ? 1 : 0;
-                $service['extras'] = $service->category->extras ?? [];
-            }
-
-            if (count($services) > 0) {
-                $authUser = auth('api')->user();
-                if ($authUser) {
-                    $recentView = $this->recentView->firstOrNew(['sub_category_id' => $sub_category_id, 'user_id' => $authUser->id]);
-                    $recentView->total_sub_category_view += 1;
-                    $recentView->save();
-                }
-                return response()->json(response_formatter(DEFAULT_200, self::variationMapper($services, $request)), 200);
-            }
-
-            return response()->json(response_formatter(DEFAULT_204), 200);
-        } catch (\Exception $e) {
-            return $e->getMessage() . '_' . $e->getLine();
-        }
+    if ($validator->fails()) {
+        return response()->json(response_formatter(DEFAULT_400, null, error_processor($validator)), 400);
     }
+
+    try {
+        $zoneId = $request->header('zoneID');
+        $sub_category_id = $request->sub_category_id;
+
+        $servicesQuery = $this->service
+            ->with([
+                'category.zonesBasicInfo',
+                'category.extras',
+                'variations' => function ($q) use ($zoneId) {
+                    $q->where('zone_id', $zoneId);
+                },
+                'service_discount',
+                'category.category_discount'
+            ])
+            ->where('sub_category_id', $sub_category_id)
+            ->where('is_active', 1)
+            ->orderBy('created_at', 'asc'); // ✅ correct ordering
+
+        // Proper page-based pagination
+        $services = $servicesQuery
+            ->paginate($request['limit'], ['*'], 'page', $request['offset'])
+            ->withPath('');
+
+        foreach ($services as $service) {
+            $service['is_favorite'] = $this->favoriteService
+                ->where('customer_user_id', $this->customer_user_id)
+                ->where('service_id', $service->id)
+                ->exists() ? 1 : 0;
+
+            $service['extras'] = $service->category->extras ?? [];
+        }
+
+        if ($services->count() > 0) {
+
+            $authUser = auth('api')->user();
+            if ($authUser) {
+                $recentView = $this->recentView->firstOrNew([
+                    'sub_category_id' => $sub_category_id,
+                    'user_id' => $authUser->id
+                ]);
+
+                $recentView->total_sub_category_view =
+                    ($recentView->total_sub_category_view ?? 0) + 1;
+
+                $recentView->save();
+            }
+
+            return response()->json(
+                response_formatter(DEFAULT_200, self::variationMapper($services, $request)),
+                200
+            );
+        }
+
+        return response()->json(response_formatter(DEFAULT_204), 200);
+
+    } catch (\Exception $e) {
+        return $e->getMessage() . '_' . $e->getLine();
+    }
+}
 
     /**
      * Display a listing of the resource.

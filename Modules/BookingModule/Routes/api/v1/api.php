@@ -26,6 +26,7 @@ Route::group(['prefix' => 'customer', 'as' => 'customer.', 'namespace' => 'Api\V
 
         Route::get('single/{booking_id}', [BookingController::class, 'singleDetails']);
         Route::post('request/send', [BookingController::class, 'placeRequest'])->middleware('hitLimiter')->withoutMiddleware('auth:api');
+        Route::post('request/sendTest', [BookingController::class, 'placeRequestTest'])->middleware('hitLimiter')->withoutMiddleware('auth:api');
         Route::post('addons-book', [BookingController::class, 'bookAddons']);
         Route::post('addons-get', [BookingController::class, 'getAddons']);
         Route::post('get-due-amount', [BookingController::class, 'getDueAmount']);

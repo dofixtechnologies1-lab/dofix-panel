@@ -86,7 +86,10 @@ class Booking extends Model
         'service_preference',
         'reach_image',
         'to_user_id',
-        'due_amt_status'
+        'due_amt_status',
+        'assign_customer_name',
+        'assign_customer_phone',
+        'assign_customer_email'
     ];
 
     protected $appends = ['evidence_photos_full_path', 'pre_work_image_full_path'];

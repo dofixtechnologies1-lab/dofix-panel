@@ -182,8 +182,12 @@ class ServiceController extends Controller
         $variationFormat = [];
         if ($variations) {
             $zones = $this->zone->ofStatus(1)->latest()->get();
+             $existingVariants = session()->get('variations', []);
 
             foreach ($variations as $item) {
+                 $sessionVariant = collect($existingVariants)->firstWhere('variant_key', $item['variant_key']);
+                 $imagePath = $sessionVariant['var_image'] ?? null;
+                
                 foreach ($zones as $zone) {
 
                     // dd($variations, $zones, $data);
@@ -196,13 +200,14 @@ class ServiceController extends Controller
                             'mrp_price' => $item['mrp_price'],
                             'discount' => $item['discount_percent'],
                             'convenience_fee' => $item['convenience_fee'],
-                            'convenience_gst' => $item['convenience_gst'],
+                            'convenience_gst' => (float) ($item['convenience_gst'] ?? 0),
                             'aggregator_fee' => $item['aggregator_fee'],
-                            'aggregator_gst' => $item['aggregator_gst'],
+                            'aggregator_gst' => (float) ($item['aggregator_gst'] ?? 0),
                             'var_description' => $item['var_description'],
                             'var_duration' => $item['var_duration'],
                             'duration_hour' => $item['duration_hour'] ?? 0,
                             'duration_minute' => $item['duration_minute'] ?? 0,
+                            'cover_image' => $imagePath,
                         ];
                     }
                 }
@@ -430,6 +435,8 @@ class ServiceController extends Controller
             'variants' => 'required|array',
             'min_bidding_price' => 'required|numeric',
         ]);
+        // print_r($request->all());
+        // die;
 
         $service = $this->service->find($id);
         if (!isset($service)) {
@@ -474,18 +481,22 @@ class ServiceController extends Controller
 
         //decoding url encoded keys
         $data = $request->all();
+     
 
         $data = collect($data)->map(function ($value, $key) {
             $key = urldecode($key);
             return [$key => $value];
         })->collapse()->all();
-
+        
         $variationFormat = [];
         $zones = $this->zone->ofStatus(1)->latest()->get();
 
-
         // if($variations == null){
+        $existingVariants = session()->get('variations', []);
         foreach ($data['variants'] as $k => $item) {
+             $sessionVariant = collect($existingVariants)->firstWhere('variant_key', $item);
+            $imagePath = $sessionVariant['var_image'] ?? null; 
+            
             foreach ($zones as $zone) {
                 $variationFormat[] = [
                     'variant' => str_replace('_', ' ', $item),
@@ -496,16 +507,19 @@ class ServiceController extends Controller
                     'mrp_price' => $data[$item . '_' . $zone->id . '_mrp_price'] ?? 0,
                     'discount' => $data[$item . '_' . $zone->id . '_discount_percent'] ?? 0,
                     'convenience_fee' => $data[$item . '_' . $zone->id . '_convenience_fee'] ?? 0,
-                    'convenience_gst' => $data[$item . '_' . $zone->id . '_convenience_gst'] ?? 0,
+                    'convenience_gst' => (float) ($data[$item . '_' . $zone->id . '_convenience_gst'] ?? 0),
                     'aggregator_fee' => $data[$item . '_' . $zone->id . '_aggregator_fee'] ?? 0,
-                    'aggregator_gst' => $data[$item . '_' . $zone->id . '_aggregator_gst'] ?? 0,
+                    'aggregator_gst' => (float) ($data[$item . '_' . $zone->id . '_aggregator_gst'] ?? 0),
                     'var_description' => $data[$item . '_' . $zone->id . '_var_description'] ?? 0,
                     'var_duration' => $data[$item . '_' . $zone->id . '_var_duration'] ?? 0,
                     'duration_hour' => $data[$item . '_' . $zone->id . '_duration_hour'] ?? 0,
                     'duration_minute' => $data[$item . '_' . $zone->id . '_duration_minute'] ?? 0,
+                    'cover_image' => $imagePath,
                 ];
             }
         }
+        
+
         // }else{
         //     foreach ($variations as $item) {
         //         foreach ($zones as $zone) {
@@ -528,11 +542,17 @@ class ServiceController extends Controller
         //     }
         // }
 
+
+    //   dd($variationFormat);
         $service->variations()->createMany($variationFormat);
+        //  dd($variationFormat);
+        
         session()->forget('variations');
         session()->forget('editing_variants');
 
         $defaultLang = str_replace('_', '-', app()->getLocale());
+        
+        
 
         foreach ($request->lang as $index => $key) {
             if ($defaultLang == $key && !($request->name[$index])) {
@@ -615,6 +635,138 @@ class ServiceController extends Controller
         Toastr::success(translate(DEFAULT_UPDATE_200['message']));
         return back();
     }
+
+// public function update(Request $request, string $id)
+// {
+//     $this->authorize('service_update');
+
+//     // Validate input
+//     $request->validate([
+//         'name' => 'required|array',
+//         'name.0' => 'required|max:191',
+//         'category_id' => 'required|uuid',
+//         'sub_category_id' => 'required|uuid',
+//         'description' => 'required|array',
+//         'description.0' => 'required',
+//         'short_description' => 'required|array',
+//         'short_description.0' => 'required',
+//         'tax' => 'required|numeric|min:0',
+//         'variants' => 'required|array',
+//         'min_bidding_price' => 'required|numeric',
+//     ]);
+
+//     $service = $this->service->find($id);
+//     if (!$service) {
+//         return response()->json(response_formatter(DEFAULT_204), 200);
+//     }
+
+//     // Handle tags
+//     $tagIds = [];
+//     if ($request->tags) {
+//         $tags = explode(',', $request->tags);
+//         foreach ($tags as $tagName) {
+//             $tag = Tag::firstOrNew(['tag' => $tagName]);
+//             $tag->save();
+//             $tagIds[] = $tag->id;
+//         }
+//     }
+
+//     // Update service main fields
+//     $defaultIndex = array_search('default', $request->lang);
+//     $service->name = $request->name[$defaultIndex];
+//     $service->category_id = $request->category_id;
+//     $service->sub_category_id = $request->sub_category_id;
+//     $service->short_description = $request->short_description[$defaultIndex];
+//     $service->description = $request->description[$defaultIndex];
+
+//     // Handle images
+//     if ($request->has('cover_image')) {
+//         $service->cover_image = file_uploader('service/', 'png', $request->file('cover_image'));
+//     }
+
+//     if ($request->has('thumbnail')) {
+//         $service->thumbnail = file_uploader('service/', 'png', $request->file('thumbnail'));
+//     }
+
+//     $service->tax = $request->tax;
+//     $service->min_bidding_price = $request->min_bidding_price;
+//     $service->save();
+//     $service->tags()->sync($tagIds);
+
+//     // Prepare variations
+//     $zones = $this->zone->ofStatus(1)->latest()->get();
+
+//     foreach ($request->variants as $variantKey) {
+//         foreach ($zones as $zone) {
+//             $service->variations()->updateOrCreate(
+//                 [
+//                     'variant_key' => $variantKey,
+//                     'zone_id' => $zone->id,
+//                 ],
+//                 [
+//                     'variant' => str_replace('_', ' ', $variantKey),
+//                     'price' => $request->input($variantKey . '_' . $zone->id . '_price', 0),
+//                     'mrp_price' => $request->input($variantKey . '_' . $zone->id . '_mrp_price', 0),
+//                     'discount' => $request->input($variantKey . '_' . $zone->id . '_discount_percent', 0),
+//                     'convenience_fee' => $request->input($variantKey . '_' . $zone->id . '_convenience_fee', 0),
+//                     'convenience_gst' => $request->input($variantKey . '_' . $zone->id . '_convenience_gst', 0),
+//                     'aggregator_fee' => $request->input($variantKey . '_' . $zone->id . '_aggregator_fee', 0),
+//                     'aggregator_gst' => $request->input($variantKey . '_' . $zone->id . '_aggregator_gst', 0),
+//                     'var_description' => $request->input($variantKey . '_' . $zone->id . '_var_description', ''),
+//                     'var_duration' => $request->input($variantKey . '_' . $zone->id . '_var_duration', 0),
+//                     'duration_hour' => $request->input($variantKey . '_' . $zone->id . '_duration_hour', 0),
+//                     'duration_minute' => $request->input($variantKey . '_' . $zone->id . '_duration_minute', 0),
+//                 ]
+//             );
+//         }
+//     }
+
+//     // Handle translations
+//     $defaultLang = str_replace('_', '-', app()->getLocale());
+
+//     foreach ($request->lang as $index => $locale) {
+//         if ($locale !== 'default') {
+//             if ($request->name[$index]) {
+//                 Translation::updateOrInsert(
+//                     [
+//                         'translationable_type' => 'Modules\ServiceManagement\Entities\Service',
+//                         'translationable_id' => $service->id,
+//                         'locale' => $locale,
+//                         'key' => 'name'
+//                     ],
+//                     ['value' => $request->name[$index]]
+//                 );
+//             }
+
+//             if ($request->short_description[$index]) {
+//                 Translation::updateOrInsert(
+//                     [
+//                         'translationable_type' => 'Modules\ServiceManagement\Entities\Service',
+//                         'translationable_id' => $service->id,
+//                         'locale' => $locale,
+//                         'key' => 'short_description'
+//                     ],
+//                     ['value' => $request->short_description[$index]]
+//                 );
+//             }
+
+//             if ($request->description[$index]) {
+//                 Translation::updateOrInsert(
+//                     [
+//                         'translationable_type' => 'Modules\ServiceManagement\Entities\Service',
+//                         'translationable_id' => $service->id,
+//                         'locale' => $locale,
+//                         'key' => 'description'
+//                     ],
+//                     ['value' => $request->description[$index]]
+//                 );
+//             }
+//         }
+//     }
+
+//     Toastr::success(translate(DEFAULT_UPDATE_200['message']));
+//     return back();
+// }
 
     /**
      * Remove the specified resource from storage.
@@ -709,6 +861,19 @@ class ServiceController extends Controller
 
     public function ajaxAddVariant(Request $request): JsonResponse
     {
+        
+    //   if ($request->hasFile('var_image')) {
+    //         $image = $request->file('var_image');
+    //         print_r("here");
+    //         die;
+    //         $imageName = time() . '_' . $image->getClientOriginalName();
+    //         $image->move(public_path('uploads/variations'), $imageName);
+        
+    //         $imagePath = 'uploads/variations/' . $imageName;
+    //     } else {
+    //         $imagePath = null;
+    //     }
+        
         $variation = [
             'variant' => $request['name'],
             'variant_key' => str_replace(' ', '-', $request['name']),
@@ -723,7 +888,20 @@ class ServiceController extends Controller
             'var_duration' => $request['var_duration'],
             'duration_hour' => $request['duration_hour'] ?? 0,
             'duration_minute' => $request['duration_minute'] ?? 0,
+            'var_image' => null, //added image field
         ];
+        
+        if ($request->hasFile('var_image')) {
+            $file = $request->file('var_image');
+            $extension = $file->getClientOriginalExtension();
+            $filename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+            $newName = $filename . '_' . date('Ymd_His') . '.' . $extension; // add date + time
+            $path = $file->storeAs('service/variant', $newName, 'public'); // store in public disk
+            $variation['var_image'] = $path;
+        }
+        
+        // print_r($variation);
+        // die;
 
         $zones = session()->has('category_wise_zones') ? session('category_wise_zones') : [];
         $existingData = session()->has('variations') ? session('variations') : [];
