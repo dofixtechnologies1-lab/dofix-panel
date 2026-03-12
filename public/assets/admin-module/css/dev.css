@@ -1,0 +1,18 @@
+.active-menu {
+    color: #ffffff;
+    background: #3389ae;
+    border-radius: .6rem;
+    padding-left: 1rem !important;
+}
+.active-menu:hover{
+    color: #fff;
+}
+.hide-div {
+    display: none;
+}
+li.has-sub-item.sub-menu-opened ul a.active-menu {
+    background: transparent !important;
+    color: #3389ae;
+    border-left: 3px solid;
+    border-radius: 0;
+}
